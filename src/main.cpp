@@ -135,20 +135,9 @@
 #else
 #include "src/WiFiManager/WiFiManager.h" // https://github.com/tzapu/WiFiManager/tree/development // 5.11.2021 DEV
 #endif
-#ifdef ARDUINO_ARCH_ESP8266
-#ifndef DUSTSENSOR_PMS5003_7003_BME280_0x77
-#include "src/libs/esp8266/bme280_0x76.h" // https://github.com/zen/BME280_light // CUSTOMIZED! 5.11.2021
-#else
-#include "src/libs/esp8266/bme280_0x77.h" // https://github.com/zen/BME280_light // CUSTOMIZED! 5.11.2021
-#endif
-#elif defined ARDUINO_ARCH_ESP32
-#include <Adafruit_BME280.h> // https://github.com/Takatsuki0204/BME280-I2C-ESP32 // 5.11.2021
-#endif
 
-#include <HTU2xD_SHT2x_Si70xx.h> // https://github.com/enjoyneering/HTU2xD_SHT2x_Si70xx // 5.11.2021
-#include <Adafruit_BMP280.h> // https://github.com/adafruit/Adafruit_BMP280_Library // 5.11.2021
-#include <SHT1x.h> // https://github.com/practicalarduino/SHT1x // 5.11.2021
-#include <DHT.h> // https://github.com/adafruit/DHT-sensor-library // 5.11.2021
+
+
 
 #ifdef DUSTSENSOR_PMS5003_7003_BME280_0x76 or DUSTSENSOR_PMS5003_7003_BME280_0x77
 #include "PMS.h" // https://github.com/fu-hsi/PMS // 5.11.2021
@@ -218,45 +207,10 @@
 
 #include <PubSubClient.h>
 #include <Wire.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 
-// TEMP/HUMI/PRESS Sensor config - START
-// BME280 config
-#ifdef ARDUINO_ARCH_ESP8266 // VIN - 3V; GND - G; SCL - D4; SDA - D3
-#define ASCII_ESC 27
-char bufout[10];
-BME280<> BMESensor;
-BME280<> BMESensor_2;
-#elif defined ARDUINO_ARCH_ESP32 // VIN - 3V; GND - G; SCL - D17; SDA - D16
-//#define I2C_SDA = FIRST_THP_SDA
-//#define I2C_SCL = FIRST_THP_SCL
-Adafruit_BME280 bme((uint8_t)FIRST_THP_SDA, (uint8_t)FIRST_THP_SCL); // I2C -- ONLY THE DEFAULT VALUES WORK
-#endif
+#include "../lib/providers/TemperatureHumidityPressure.h"
 
-// BMP280 config
-Adafruit_BMP280 bmp; //I2C
 
-// Serial for SHT21/HTU21D config
-// HTU21D  myHTU21D(HTU21D_RES_RH12_TEMP14);
-HTU2xD_SHT2x_SI70xx ht2x(HTU2xD_SENSOR, HUMD_12BIT_TEMP_14BIT); //sensor type, resolution
-
-// DHT22 config
-//#define DHTPIN 13 // D7 on NodeMCU/WeMos board
-#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
-DHT dht(FIRST_THP_SDA, DHTTYPE);
-
-// SHT1x – Config
-//#define dataPin 14 //D5
-//#define clockPin 12 //D6
-SHT1x sht1x(FIRST_THP_SDA, FIRST_THP_SCL);
-
-// DS18B20 – Config
-//const int DS18B20_WireBus = 14; // D5
-//OneWire oneWire(FIRST_THP_SDA);
-OneWire oneWire(14);
-DallasTemperature DS18B20(&oneWire);
-// TEMP/HUMI/PRESS Sensor config - END
 
 // DUST Sensor config - START
 
@@ -443,127 +397,15 @@ extern "C" {
 WiFiManager wifiManager;
 #endif
 
-// check TEMP/HUMI/PRESS Sensor - START
-bool checkHTU21DStatus() {
-  int temperature_HTU21D_Int = int(ht2x.readTemperature());
-  int humidity_HTU21D_Int = int(ht2x.readHumidity());
-  if ((temperature_HTU21D_Int == 0 && humidity_HTU21D_Int == 0) || (temperature_HTU21D_Int == 255 && humidity_HTU21D_Int == 255)) {
-    if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-      Serial.println(F("No data from HTU21D sensor!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-      Serial.println(("No data from HTU21D sensor!\n"));
-#endif
-    }
-    return false;
-  } else {
-    return true;
-  }
-}
 
-bool checkBmeStatus() {
-#ifdef ARDUINO_ARCH_ESP8266
-  int temperature_BME280_Int = BMESensor.temperature;
-  int pressure_BME280_Int = (BMESensor.seaLevelForAltitude(MYALTITUDE));
-  int humidity_BME280_Int = BMESensor.humidity;
-#elif defined ARDUINO_ARCH_ESP32
-  int temperature_BME280_Int = bme.readTemperature();
-  int pressure_BME280_Int = (bme.seaLevelForAltitude(MYALTITUDE, (bme.readPressure() / 100.0F)));
-  int humidity_BME280_Int = bme.readHumidity();
-#endif
-  if (temperature_BME280_Int == 0 && pressure_BME280_Int == 0 && humidity_BME280_Int == 0) {
-    if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-      Serial.println(F("No data from BME280 sensor!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-      Serial.println(("No data from BME280 sensor!\n"));
-#endif
-    }
-    return false;
-  } else {
-    return true;
-  }
-}
 
-bool checkBmpStatus() {
-  int temperature_BMP_Int = bmp.readTemperature();
-  int pressure_BMP_Int = bmp.readPressure();
-  if (temperature_BMP_Int == 0 && pressure_BMP_Int == 0) {
-    if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-      Serial.println(F("No data from BMP280 sensor!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-      Serial.println(("No data from BMP280 sensor!\n"));
-#endif
-    }
-    return false;
-  } else {
-    return true;
-  }
-}
 
-bool checkDHT22Status() {
-  int humidity_DHT_Int = dht.readHumidity();
-  int temperature_DHT_Int = dht.readTemperature();
-  if (humidity_DHT_Int == 0 && temperature_DHT_Int == 0) {
-    if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-      Serial.println(F("No data from DHT22 sensor!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-      Serial.println(("No data from DHT22 sensor!\n"));
-#endif
-    }
-    return false;
-  } else if (isnan(humidity_DHT_Int) && isnan(temperature_DHT_Int)) {
-    if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-      Serial.println(F("No data from DHT22 sensor!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-      Serial.println(("No data from DHT22 sensor!\n"));
-#endif
-    }
-    return false;
-  } else {
-    return true;
-  }
-}
 
-bool checkSHT1xStatus() {
-  int humidity_SHT1x_Int = sht1x.readHumidity();
-  int temperature_SHT1x_Int = sht1x.readTemperatureC();
-  if (humidity_SHT1x_Int == 0 && temperature_SHT1x_Int == 0) {
-    if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-      Serial.println(F("No data from SHT1x sensor!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-      Serial.println(("No data from SHT1x sensor!\n"));
-#endif
-    }
-    return false;
-  } else {
-    return true;
-  }
-}
 
-bool checkDS18B20Status() {
-  /*
-    DS18B20.requestTemperatures();
-    int temperature_DS18B20_Int = DS18B20.getTempCByIndex(0);
-    if (temperature_DS18B20_Int == -127) {
-    if (DEBUG) {
-    #ifdef ARDUINO_ARCH_ESP8266
-      Serial.println(F("No data from DS18B20 sensor!\n"));
-    #elif defined ARDUINO_ARCH_ESP32
-      Serial.println(("No data from DS18B20 sensor!\n"));
-    #endif
-    }
-    return false;
-    } else {
-    return true;
-    }
-  */
-  return true;
-}
+
+
+
+
 // check TEMP/HUMI/PRESS Sensor - END
 
 void minutesToSeconds() {
@@ -1536,6 +1378,80 @@ void setup() {
 
 }
 
+void pm_calibration() {
+  // Automatic calibration - START
+  if (!strcmp(MODEL, "white")) {
+    if (!strcmp(THP_MODEL, "BME280")) {
+
+#ifdef ARDUINO_ARCH_ESP8266
+      BMESensor.refresh(FIRST_THP_SDA, FIRST_THP_SCL);
+      if (int(BMESensor.temperature) < 5 or int(BMESensor.humidity) > 60) {
+        calib1 = float((200 - (BMESensor.humidity)) / 150);
+        calib2 = calib1 / 2;
+        calib = calib2;
+      } else {
+        calib = calib1;
+      }
+#elif defined ARDUINO_ARCH_ESP32
+      if (int(bme.readTemperature()) < 5 or int(bme.readHumidity()) > 60) {
+        calib1 = float((200 - (bme.readHumidity())) / 150);
+        calib2 = calib1 / 2;
+        calib = calib2;
+      } else {
+        calib = calib1;
+      }
+#endif
+    } else if (!strcmp(THP_MODEL, "HTU21")) {
+      if (int(ht2x.readTemperature()) < 5 or int(ht2x.getCompensatedHumidity(int(ht2x.readTemperature()))) > 60) {
+        calib1 = float((200 - (ht2x.getCompensatedHumidity(int(ht2x.readTemperature())))) / 150);
+        calib2 = calib1 / 2;
+        calib = calib2;
+      } else {
+        calib = calib1;
+      }
+    } else if (!strcmp(THP_MODEL, "DHT22")) {
+      if (int(dht.readTemperature()) < 5 or int(dht.readHumidity()) > 60) {
+        calib1 = float((200 - (dht.readHumidity())) / 150);
+        calib2 = calib1 / 2;
+        calib = calib2;
+      } else {
+        calib = calib1;
+      }
+    } else if (!strcmp(THP_MODEL, "SHT1x")) {
+      if (int(sht1x.readTemperatureC()) < 5 or int(sht1x.readHumidity()) > 60) {
+        calib1 = float((200 - (sht1x.readHumidity())) / 150);
+        calib2 = calib1 / 2;
+        calib = calib2;
+      } else {
+        calib = calib1;
+      }
+    }
+
+  }
+  // Automatic calibration - END
+
+  if (!strcmp(THP_MODEL, "BME280")) {
+    calib = calib1;
+  } else if (!strcmp(THP_MODEL, "HTU21")) {
+    calib = calib1;
+  } else if (!strcmp(THP_MODEL, "DHT22")) {
+    calib = calib1;
+  } else if (!strcmp(THP_MODEL, "SHT1x")) {
+    calib = calib1;
+  } else if (!strcmp(THP_MODEL, "BMP280")) {
+    calib = calib1;
+  } else if (!strcmp(THP_MODEL, "DS18B20")) {
+    calib = calib1;
+  }
+
+}
+
+void updateTHPMeasurements () {
+    currentTemperature = takeTHPMeasurements().temperature;
+    currentHumidity = takeTHPMeasurements().humidity;
+    currentHumidity = takeTHPMeasurements().pressure;
+}
+
 void loop() {
   /*
     Serial.print(F("========================================\n"));
@@ -1617,11 +1533,12 @@ void loop() {
       yield();
 
       if (LUFTDATEN_ON or AQI_ECO_ON or AIRMONITOR_ON or SMOGLIST_ON) {
-        takeTHPMeasurements();
+        
+        updateTHPMeasurements();
         sendDataToExternalServices();
       }
       if (THINGSPEAK_ON or INFLUXDB_ON or MQTT_ON) {
-        takeTHPMeasurements();
+        updateTHPMeasurements();
         sendDataToExternalDBs();
       }
 
@@ -1667,11 +1584,11 @@ void loop() {
         previous_2sec_Millis = millis();
       }
       if (LUFTDATEN_ON or AQI_ECO_ON or AIRMONITOR_ON or SMOGLIST_ON) {
-        takeTHPMeasurements();
+        updateTHPMeasurements();
         sendDataToExternalServices();
       }
       if (THINGSPEAK_ON or INFLUXDB_ON or MQTT_ON) {
-        takeTHPMeasurements();
+        updateTHPMeasurements();
         sendDataToExternalDBs();
       }
 
@@ -1699,7 +1616,7 @@ void loop() {
     // Serial.println("current_SENDING_FREQUENCY_AIRMONITOR_Millis: " + String(current_SENDING_FREQUENCY_AIRMONITOR_Millis));
 
     if (current_SENDING_FREQUENCY_AIRMONITOR_Millis - previous_SENDING_FREQUENCY_AIRMONITOR_Millis >= SENDING_FREQUENCY_AIRMONITOR_interval) {
-      takeTHPMeasurements();
+        updateTHPMeasurements();
       // Serial.println("SEND DATA TO AIRMONITOR");
       sendDataToExternalServices();
       previous_SENDING_FREQUENCY_AIRMONITOR_Millis = millis();
@@ -1709,7 +1626,7 @@ void loop() {
   if (LUFTDATEN_ON or AQI_ECO_ON or SMOGLIST_ON) {
     unsigned int current_SENDING_FREQUENCY_Millis = millis();
     if (current_SENDING_FREQUENCY_Millis - previous_SENDING_FREQUENCY_Millis >= SENDING_FREQUENCY_interval) {
-      takeTHPMeasurements();
+        updateTHPMeasurements();
       sendDataToExternalServices();
       previous_SENDING_FREQUENCY_Millis = millis();
     }
@@ -1718,7 +1635,7 @@ void loop() {
   if (THINGSPEAK_ON or INFLUXDB_ON or MQTT_ON) {
     unsigned int current_SENDING_DB_FREQUENCY_Millis = millis();
     if (current_SENDING_DB_FREQUENCY_Millis - previous_SENDING_DB_FREQUENCY_Millis >= SENDING_DB_FREQUENCY_interval) {
-      takeTHPMeasurements();
+        updateTHPMeasurements();
       sendDataToExternalDBs();
       previous_SENDING_DB_FREQUENCY_Millis = millis();
     }
@@ -2191,291 +2108,6 @@ String addSlash(String receivedString, bool frontSlash, bool backSlash) {
   return receivedString;
 }
 
-void takeTHPMeasurements() {
-  float currentTemperature_THP1, currentHumidity_THP1, currentPressure_THP1 = 0;
-  float currentTemperature_THP2, currentHumidity_THP2, currentPressure_THP2 = 0;
-
-  if (!strcmp(THP_MODEL, "BME280")) {
-
-#ifdef ARDUINO_ARCH_ESP8266
-    BMESensor.refresh(FIRST_THP_SDA, FIRST_THP_SCL);
-#endif
-    if (checkBmeStatus() == true) {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("Measurements from BME280!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("Measurements from BME280!\n"));
-#endif
-      }
-#ifdef ARDUINO_ARCH_ESP8266
-      currentTemperature_THP1 = BMESensor.temperature;
-      currentPressure_THP1 = BMESensor.seaLevelForAltitude(MYALTITUDE);
-      currentHumidity_THP1 = BMESensor.humidity;
-#elif defined ARDUINO_ARCH_ESP32
-      currentTemperature_THP1 = (bme.readTemperature()); // maybe *0.89 ?
-      currentPressure_THP1 = (bme.seaLevelForAltitude(MYALTITUDE, (bme.readPressure() / 100.0F)));
-      currentHumidity_THP1 = (bme.readHumidity()); // maybe *0.89 ?
-#endif
-
-    } else {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("No measurements from BME280!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("No measurements from BME280!\n"));
-#endif
-      }
-    }
-  } else if (!strcmp(THP_MODEL, "HTU21")) {
-    if (checkHTU21DStatus() == true) {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("Measurements from HTU21!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("Measurements from HTU21!\n"));
-#endif
-      }
-      currentTemperature_THP1 = ht2x.readTemperature();
-      currentHumidity_THP1 = ht2x.readHumidity();
-    } else {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("No measurements from HTU21D!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("No measurements from HTU21D!\n"));
-#endif
-      }
-    }
-  } else if (!strcmp(THP_MODEL, "BMP280")) {
-    if (checkBmpStatus() == true) {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("Measurements from BMP280!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("Measurements from BMP280!\n"));
-#endif
-      }
-      currentTemperature_THP1 = bmp.readTemperature();
-      currentPressure_THP1 = (bmp.readPressure()) / 100;
-    } else {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("No measurements from BMP280!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("No measurements from BMP280!\n"));
-#endif
-      }
-    }
-  } else if (!strcmp(THP_MODEL, "DHT22")) {
-    if (checkDHT22Status() == true) {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("Measurements from DHT22!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("Measurements from DHT22!\n"));
-#endif
-      }
-      currentTemperature_THP1 = dht.readTemperature();
-      currentHumidity_THP1 = dht.readHumidity();
-    } else {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("No measurements from DHT22!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("No measurements from DHT22!\n"));
-#endif
-      }
-    }
-  } else if (!strcmp(THP_MODEL, "SHT1x")) {
-    if (checkSHT1xStatus() == true) {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("Measurements from SHT1x!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("Measurements from SHT1x!\n"));
-#endif
-      }
-      currentTemperature_THP1 = sht1x.readTemperatureC();
-      currentHumidity_THP1 = sht1x.readHumidity();
-    } else {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("No measurements from SHT1x!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("No measurements from SHT1x!\n"));
-#endif
-      }
-    }
-  } else if (!strcmp(THP_MODEL, "DS18B20")) {
-    if (checkDS18B20Status() == true) {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("Measurements from DS18B20!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("Measurements from DS18B20!\n"));
-#endif
-      }
-      DS18B20.requestTemperatures();
-      currentTemperature_THP1 = DS18B20.getTempCByIndex(0);
-    } else {
-      if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F("No measurements from DS18B20!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println(("No measurements from DS18B20!\n"));
-#endif
-      }
-    }
-  }
-
-  if (SECOND_THP) {
-    if (!strcmp(SECOND_THP_MODEL, "BME280")) {
-#ifdef ARDUINO_ARCH_ESP8266
-      BMESensor_2.refresh(SECOND_THP_SDA, SECOND_THP_SCL);
-#endif
-      if (checkBmeStatus() == true) {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("Measurements from BME280!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("Measurements from BME280!\n"));
-#endif
-        }
-#ifdef ARDUINO_ARCH_ESP8266
-        currentTemperature_THP2 = BMESensor_2.temperature;
-        currentPressure_THP2 = BMESensor_2.seaLevelForAltitude(MYALTITUDE);
-        currentHumidity_THP2 = BMESensor_2.humidity;
-#elif defined ARDUINO_ARCH_ESP32
-        currentTemperature_THP2 = (bme.readTemperature()); // maybe *0.89 ?
-        currentPressure_THP2 = (bme.seaLevelForAltitude(MYALTITUDE, (bme.readPressure() / 100.0F)));
-        currentHumidity_THP2 = (bme.readHumidity()); // maybe *0.89 ?
-#endif
-      } else {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("No measurements from BME280!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("No measurements from BME280!\n"));
-#endif
-        }
-      }
-    } else if (!strcmp(SECOND_THP_MODEL, "HTU21")) {
-      if (checkHTU21DStatus() == true) {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("Measurements from HTU21!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("Measurements from HTU21!\n"));
-#endif
-        }
-        currentTemperature_THP2 = ht2x.readTemperature();
-        currentHumidity_THP2 = ht2x.readHumidity();
-      } else {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("No measurements from HTU21D!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("No measurements from HTU21D!\n"));
-#endif
-        }
-      }
-    } else if (!strcmp(SECOND_THP_MODEL, "BMP280")) {
-      if (checkBmpStatus() == true) {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("Measurements from BMP280!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("Measurements from BMP280!\n"));
-#endif
-        }
-        currentTemperature_THP2 = bmp.readTemperature();
-        currentPressure_THP2 = (bmp.readPressure()) / 100;
-      } else {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("No measurements from BMP280!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("No measurements from BMP280!\n"));
-#endif
-        }
-      }
-    } else if (!strcmp(SECOND_THP_MODEL, "DHT22")) {
-      if (checkDHT22Status() == true) {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("Measurements from DHT22!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("Measurements from DHT22!\n"));
-#endif
-        }
-        currentTemperature_THP2 = dht.readTemperature();
-        currentHumidity_THP2 = dht.readHumidity();
-      } else {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("No measurements from DHT22!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("No measurements from DHT22!\n"));
-#endif
-        }
-      }
-    } else if (!strcmp(SECOND_THP_MODEL, "SHT1x")) {
-      if (checkSHT1xStatus() == true) {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("Measurements from SHT1x!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("Measurements from SHT1x!\n"));
-#endif
-        }
-        currentTemperature_THP2 = sht1x.readTemperatureC();
-        currentHumidity_THP2 = sht1x.readHumidity();
-      } else {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("No measurements from SHT1x!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("No measurements from SHT1x!\n"));
-#endif
-        }
-      }
-    } else if (!strcmp(SECOND_THP_MODEL, "DS18B20")) {
-      if (checkDS18B20Status() == true) {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("Measurements from DS18B20!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("Measurements from DS18B20!\n"));
-#endif
-        }
-        DS18B20.requestTemperatures();
-        currentTemperature_THP2 = DS18B20.getTempCByIndex(0);
-      } else {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("No measurements from DS18B20!\n"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("No measurements from DS18B20!\n"));
-#endif
-        }
-      }
-    }
-  }
-
-  //temporary solution!
-  currentTemperature = currentTemperature_THP1;
-  currentHumidity = currentHumidity_THP1;
-  currentPressure = currentPressure_THP1;
-
-#ifdef ARDUINO_ARCH_ESP32
-  if (HOMEKIT_SUPPORT) {
-    // homekit_DeviceData.homekit_temperature = currentTemperature;
-    // homekit_DeviceData.homekit_humidity = currentHumidity;
-    notify_hap();
-  }
-#endif
-}
 
 void takeNormalnPMMeasurements() {
   /*
@@ -2870,73 +2502,7 @@ void takeSleepPMMeasurements() {
 
 }
 
-void pm_calibration() {
-  // Automatic calibration - START
-  if (!strcmp(MODEL, "white")) {
-    if (!strcmp(THP_MODEL, "BME280")) {
 
-#ifdef ARDUINO_ARCH_ESP8266
-      BMESensor.refresh(FIRST_THP_SDA, FIRST_THP_SCL);
-      if (int(BMESensor.temperature) < 5 or int(BMESensor.humidity) > 60) {
-        calib1 = float((200 - (BMESensor.humidity)) / 150);
-        calib2 = calib1 / 2;
-        calib = calib2;
-      } else {
-        calib = calib1;
-      }
-#elif defined ARDUINO_ARCH_ESP32
-      if (int(bme.readTemperature()) < 5 or int(bme.readHumidity()) > 60) {
-        calib1 = float((200 - (bme.readHumidity())) / 150);
-        calib2 = calib1 / 2;
-        calib = calib2;
-      } else {
-        calib = calib1;
-      }
-#endif
-    } else if (!strcmp(THP_MODEL, "HTU21")) {
-      if (int(ht2x.readTemperature()) < 5 or int(ht2x.getCompensatedHumidity(int(ht2x.readTemperature()))) > 60) {
-        calib1 = float((200 - (ht2x.getCompensatedHumidity(int(ht2x.readTemperature())))) / 150);
-        calib2 = calib1 / 2;
-        calib = calib2;
-      } else {
-        calib = calib1;
-      }
-    } else if (!strcmp(THP_MODEL, "DHT22")) {
-      if (int(dht.readTemperature()) < 5 or int(dht.readHumidity()) > 60) {
-        calib1 = float((200 - (dht.readHumidity())) / 150);
-        calib2 = calib1 / 2;
-        calib = calib2;
-      } else {
-        calib = calib1;
-      }
-    } else if (!strcmp(THP_MODEL, "SHT1x")) {
-      if (int(sht1x.readTemperatureC()) < 5 or int(sht1x.readHumidity()) > 60) {
-        calib1 = float((200 - (sht1x.readHumidity())) / 150);
-        calib2 = calib1 / 2;
-        calib = calib2;
-      } else {
-        calib = calib1;
-      }
-    }
-
-  }
-  // Automatic calibration - END
-
-  if (!strcmp(THP_MODEL, "BME280")) {
-    calib = calib1;
-  } else if (!strcmp(THP_MODEL, "HTU21")) {
-    calib = calib1;
-  } else if (!strcmp(THP_MODEL, "DHT22")) {
-    calib = calib1;
-  } else if (!strcmp(THP_MODEL, "SHT1x")) {
-    calib = calib1;
-  } else if (!strcmp(THP_MODEL, "BMP280")) {
-    calib = calib1;
-  } else if (!strcmp(THP_MODEL, "DS18B20")) {
-    calib = calib1;
-  }
-
-}
 
 void averagePM() {
   averagePM1 = 0;

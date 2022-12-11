@@ -12,6 +12,8 @@
 #include "../lib/smogly_spiffs.h"
 #include <FS.h>
 
+#include "../providers/TemperatureHumidityPressure.h"
+
 static String handle_root_processor(const String& var)
 {
   // Serial.println(F("var: ") + var);
