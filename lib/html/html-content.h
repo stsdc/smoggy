@@ -2,6 +2,9 @@
 #include <avr/pgmspace.h>
 #endif
 
+#ifndef HTML_CONTENT_H
+#define HTML_CONTENT_H
+
 static const char WEB_PAGE_HEADER_CSS[] PROGMEM = "<link rel='stylesheet' href='https://rawcdn.githack.com/hackerspace-silesia/Smogomierz/b1e4dd9a2b6fddb63da88c46ef934509ab1def44/css/smogly.css'>";
 // via http://raw.githack.com 
 //static const char WEB_PAGE_HEADER_CSS[] PROGMEM = "<link rel='stylesheet' href='https://raw.githubusercontent.com/hackerspace-silesia/Smogomierz/master/css/smogly.css'>";
@@ -357,4 +360,6 @@ static char LATLONG_LINK[] = "<a title='latlong.net' href='https://www.latlong.n
 static char THINGSPEAK_LINK[] = "<a title='ThingSpeak' href='https://thingspeak.com' target='_blank'>ThingSpeak</a>";
 static char SMOGOMIERZRELEASES_LINK[] = "<b><a target='_blank' href='https://github.com/hackerspace-silesia/Smogomierz/releases'>{TEXT_HERE}</a></b>";
 static char MADAVI_LINK[] = "<a title='madavi.de' href='https://www.madavi.de/sensor/graph.php' target='_blank'>{TEXT_HERE}</a>";
+#endif
+
 #endif

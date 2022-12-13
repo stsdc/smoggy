@@ -9,7 +9,7 @@
 #include "InfluxDbV2.h"
 #include "Arduino.h"
 
-#include "../../config.h"
+#include "../include/config.h"
 
 /**
  * Construct an InfluxDbV2 instance.

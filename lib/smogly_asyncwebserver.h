@@ -1,5 +1,7 @@
 //#pragma once
-	
+#ifndef WEBSERVER_ASYNC_H
+#define WEBSERVER_ASYNC_H
+
 #ifdef ARDUINO_ARCH_ESP8266
 #include <ESP8266httpUpdate.h>
 #elif defined ARDUINO_ARCH_ESP32
@@ -13,6 +15,29 @@
 #include <FS.h>
 
 #include "../providers/TemperatureHumidityPressure.h"
+
+#include "../lib/html/html-content.h"
+
+#include "../lib/html/html-root.h"
+#include "../lib/html/html-config.h"
+#include "../lib/html/html-config-device.h"
+#include "../lib/html/html-config-services.h"
+#include "../lib/html/html-config-adv-mqtt.h"
+#include "../lib/html/html-update.h"
+#include "../lib/smogly_asyncwebserver.h"
+
+#ifdef INTL_OLD
+#include "../lib/intl/default_intl.h"
+#include "../include/translator.h"
+#endif
+
+#ifdef INTL_EN
+#include "intl/new_default_intl.h"
+#endif
+
+#ifdef INTL_PL
+#include "intl/new_intl_pl.h"
+#endif
 
 static String handle_root_processor(const String& var)
 {
@@ -1077,20 +1102,20 @@ static String handle_config_device_processor(const String& var)
     message += (_addBoolSelect(F("HOMEKIT_SUPPORT"), HOMEKIT_SUPPORT));
   }
   
-  if (HOMEKIT_SUPPORT == true and String(homekit_is_paired()) == "1") {
-  if (var == F("{WEB_CONFIG_DEVICE_HOMEKIT_RESET")) {
-    message += String(WEB_CONFIG_DEVICE_HOMEKIT_RESET_PAIR);
-  }
-  if (var == F("{TEXT_HOMEKIT_IS_PAIRED}")) {
-      // Serial.println(F("homekit_is_paired: ") + String(homekit_is_paired()));
-        message += String(TEXT_HOMEKIT_IS_PAIRED);
-  }
-  if (var == F("{HOMEKIT_PAIRED_RESET}")) {
-      // Serial.println(F("homekit_is_paired: ") + String(homekit_is_paired()));
-        message += (_add_homekit_reset());
-  }
+//   if (HOMEKIT_SUPPORT == true and String(homekit_is_paired()) == "1") {
+//     if (var == F("{WEB_CONFIG_DEVICE_HOMEKIT_RESET")) {
+//       message += String(WEB_CONFIG_DEVICE_HOMEKIT_RESET_PAIR);
+//     }
+//     if (var == F("{TEXT_HOMEKIT_IS_PAIRED}")) {
+//         // Serial.println(F("homekit_is_paired: ") + String(homekit_is_paired()));
+//           message += String(TEXT_HOMEKIT_IS_PAIRED);
+//     }
+//     if (var == F("{HOMEKIT_PAIRED_RESET}")) {
+//         // Serial.println(F("homekit_is_paired: ") + String(homekit_is_paired()));
+//           message += (_add_homekit_reset());
+//     }
   
-}
+// }
 #endif
 
 if (var == F("{TEXT_UPDATEWARNING}")) {
@@ -3170,3 +3195,5 @@ static void homekit_off(AsyncWebServerRequest *request) {
   request->redirect("/");
   }
 */
+
+#endif

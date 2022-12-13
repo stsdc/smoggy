@@ -10,7 +10,7 @@
 #endif
 
 #include <ArduinoJson.h>
-#include "../../config.h"
+#include "../include/config.h"
 
 const char *luftdatenAPIHOST PROGMEM = "api.luftdaten.info";
 const char *luftdatenAPIURL PROGMEM = "/v1/push-sensor-data/";
