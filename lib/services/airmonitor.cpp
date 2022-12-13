@@ -11,7 +11,7 @@
 #endif
 
 #include <ArduinoJson.h>
-#include "../include/config.h"
+#include "../include/defaultConfig.hpp"
 
 const char *airMonitorServerName PROGMEM = "airmonitor.pl";
 

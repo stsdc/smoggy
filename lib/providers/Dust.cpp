@@ -267,7 +267,7 @@ void takeSleepPMMeasurements() {
     unsigned int current_2sec_Millis = millis();
     previous_2sec_Millis = millis();
     while (previous_2sec_Millis - current_2sec_Millis <= TwoSec_interval * 5) {
-      WebServer.handleClient();
+      // WebServer.handleClient();
       previous_2sec_Millis = millis();
     }
     previous_2sec_Millis = 0;
@@ -293,7 +293,7 @@ void takeSleepPMMeasurements() {
 
       previous_2sec_Millis = millis();
     }
-    WebServer.handleClient();
+    // WebServer.handleClient();
 #endif
   }
   if (DEBUG) {

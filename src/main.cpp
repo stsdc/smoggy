@@ -129,14 +129,14 @@
 #ifdef ASYNC_WEBSERVER_ON
 #include <ESPAsyncWiFiManager.h> // https://github.com/alanswx/ESPAsyncWiFiManager // 5.11.2021
 #else
-#include "src/WiFiManager/WiFiManager.h" // https://github.com/tzapu/WiFiManager/tree/development // 5.11.2021 DEV
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager/tree/development // 5.11.2021 DEV
 #endif
 
-#include "../lib/smogly_spiffs.h"
-#include "config.h"
-#include "../include/defaultConfig.h"
+#include "../lib/smogly_spiffs.hpp"
+// #include "defaultConfig.hpp"
+#include "../include/defaultConfig.hpp"
 
-#include "../lib/autoupdate.h"
+// #include "../lib/autoupdate.h"
 
 #ifndef DISABLE_SMOGLIST
 #include "../lib/services/smoglist.h"
@@ -168,6 +168,12 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <ESPmDNS.h>
+
+
+
+#include "../lib/providers/TemperatureHumidityPressure.h"
+#include "../lib/providers/Dust.h"
+
 #ifdef ASYNC_WEBSERVER_ON
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -184,8 +190,6 @@
 #include <PubSubClient.h>
 #include <Wire.h>
 
-#include "../lib/providers/TemperatureHumidityPressure.h"
-#include "../lib/providers/Dust.h"
 
 static char device_name[20];
 
@@ -644,11 +648,336 @@ void set_SERIAL_PINS(String DUST_PIN, int i) {
 
 // library doesnt support arguments :/
 #ifdef ASYNC_WEBSERVER_ON
-
+#include "../lib/smogly_asyncwebserver.hpp"
 #else
-#include "../lib/smogly_webserver.h"
+// #include "../lib/smogly_webserver.h"
 #endif
 
+static String handle_root_processor(const String& var)
+{
+  // Serial.println(F("var: ") + var);
+  String message;
+  message = "";
+
+  if (var == F("{Language}")) {
+    message += String(TEXT_LANG);
+  }
+
+  if (var == F("{WEB_PAGE_CSS}")) {
+    message += String(WEB_PAGE_HEADER_CSS);
+  }
+
+  if (var == F("{SMOGLY_LOGO_URL}")) {
+    message += String(SMOGLY_LOGO_URL);
+  }
+
+  if (var == F("{CurrentPageTitle}")) {
+    message += String(TEXT_INDEX_PAGE);
+  }
+  if (var == F("{IndexPageTitle}")) {
+    message += String(TEXT_INDEX_PAGE);
+  }
+  if (var == F("{ConfigPageTitle}")) {
+    message += String(TEXT_CONFIG_PAGE);
+  }
+  if (var == F("{UpdatePageTitle}")) {
+    message += String(TEXT_UPDATE_PAGE);
+  }
+
+  if (!AUTOUPDATE_ON) {
+    if (need_update) {
+      if (var == F("{WEB_UPDATE_INFO_WARNING}")) {
+        message += String(WEB_UPDATE_INFO_WARNING);
+      }
+
+      if (var == F("{TEXT_FWUPDATEAVALIBLE}")) {
+        message += String(TEXT_FWUPDATEAVALIBLE);
+      }
+      if (var == F("{MANUALUPDATEBUTTON}")) {
+        message += "";
+      }
+
+      if (var == F("{FWUPDATEBUTTON}")) {
+        message += String(WEB_UPDATE_BUTTON_FWUPDATE);
+      }
+      if (var == F("{TEXT_FWUPDATEBUTTON}")) {
+        message += String(TEXT_FWUPDATEBUTTON);
+      }
+
+      if (var == F("{AUTOUPDATEONBUTTON}")) {
+        message += String(WEB_UPDATE_BUTTON_AUTOUPDATEON);
+      }
+      if (var == F("{TEXT_AUTOUPDATEONBUTTON}")) {
+        message += String(TEXT_AUTOUPDATEONBUTTON);
+      }
+
+      if (var == F("{TEXT_AUTOUPDATEWARNING}")) {
+        message += String(TEXT_AUTOUPDATEWARNING);
+      }
+      if (var == F("{TEXT_FWUPDATEBUTTON}")) {
+        message += String(TEXT_FWUPDATEBUTTON);
+      }
+
+    }
+    if (var == F("{WEB_UPDATE_INFO_WARNING}")) {
+      message += "";
+    }
+  } else {
+    if (var == F("{WEB_UPDATE_INFO_WARNING}")) {
+      message += "";
+    }
+  }
+
+  if (!strcmp(THP_MODEL, "Non")) {
+    if (var == F("{WEB_ROOT_PAGE_MEASUREMENTS_THP1")) {
+      message += "";
+    }
+  } else {
+    if (var == F("{WEB_ROOT_PAGE_MEASUREMENTS_THP1")) {
+      takeTHPMeasurements();
+      message += String(WEB_ROOT_PAGE_MEASUREMENTS_THP1);
+      message.replace(F("{TEXT_WEATHER}"), String(TEXT_WEATHER));
+
+      if (!strcmp(THP_MODEL, "BME280")) {
+        if (checkBmeStatus()) {
+            message.replace(F("{TEXT_TEMPERATURE}"), String(TEXT_TEMPERATURE));
+            message.replace(F("{TEXT_HUMIDITY}"), String(TEXT_HUMIDITY));
+            message.replace(F("{TEXT_PRESSURE}"), String(TEXT_PRESSURE));
+            message.replace(F("{TEXT_DEWPOINT}"), String(TEXT_DEWPOINT));
+
+            message.replace(F("{Temperature}"), String(int(currentTemperature)));
+            message.replace(F("{Pressure}"), String(int(currentPressure)));
+            message.replace(F("{Humidity}"), String(int(currentHumidity)));
+            message.replace(F("{Dewpoint}"), String(int(pow((currentHumidity) / 100, 0.125) * (112 + 0.9 * (currentTemperature)) + 0.1 * (currentTemperature) - 112)));
+        } else {
+          message.replace(F("{TEXT_TEMPERATURE}: {Temperature} °C"), "");
+          message.replace(F("{TEXT_HUMIDITY}: {Humidity} %"), "");
+          message.replace(F("{TEXT_PRESSURE}: {Pressure} hPa"), "");
+          message.replace(F("{TEXT_DEWPOINT}: {Dewpoint} °C"), "");
+        }
+      } else if (!strcmp(THP_MODEL, "HTU21")) {
+        if (checkHTU21DStatus()) {
+          message.replace(F("{TEXT_TEMPERATURE}"), String(TEXT_TEMPERATURE));
+          message.replace(F("{TEXT_HUMIDITY}"), String(TEXT_HUMIDITY));
+          message.replace(F("{TEXT_DEWPOINT}"), String(TEXT_DEWPOINT));
+
+          message.replace(F("{Temperature}"), String(int(currentTemperature)));
+          message.replace(F("{TEXT_PRESSURE}: {Pressure} hPa"), "");
+          message.replace(F("{Humidity}"), String(int(currentHumidity)));
+          message.replace(F("{Dewpoint}"), String(int(pow((currentHumidity) / 100, 0.125) * (112 + 0.9 * (currentTemperature)) + 0.1 * (currentTemperature) - 112)));
+        } else {
+          message.replace(F("{TEXT_TEMPERATURE}: {Temperature} °C"), "");
+          message.replace(F("{TEXT_HUMIDITY}: {Humidity} %"), "");
+          message.replace(F("{TEXT_PRESSURE}: {Pressure} hPa"), "");
+          message.replace(F("{TEXT_DEWPOINT}: {Dewpoint} °C"), "");
+        }
+      } else if (!strcmp(THP_MODEL, "DHT22")) {
+        if (checkDHT22Status()) {
+          message.replace(F("{TEXT_TEMPERATURE}"), String(TEXT_TEMPERATURE));
+          message.replace(F("{TEXT_HUMIDITY}"), String(TEXT_HUMIDITY));
+          message.replace(F("{TEXT_DEWPOINT}"), String(TEXT_DEWPOINT));
+
+          message.replace(F("{Temperature}"), String(int(currentTemperature)));
+          message.replace(F("{TEXT_PRESSURE}: {Pressure} hPa"), "");
+          message.replace(F("{Humidity}"), String(int(currentHumidity)));
+          message.replace(F("{Dewpoint}"), String(int(pow((currentHumidity) / 100, 0.125) * (112 + 0.9 * (currentTemperature)) + 0.1 * (currentTemperature) - 112)));
+        } else {
+          message.replace(F("{TEXT_TEMPERATURE}: {Temperature} °C"), "");
+          message.replace(F("{TEXT_HUMIDITY}: {Humidity} %"), "");
+          message.replace(F("{TEXT_PRESSURE}: {Pressure} hPa"), "");
+          message.replace(F("{TEXT_DEWPOINT}: {Dewpoint} °C"), "");
+        }
+      } else if (!strcmp(THP_MODEL, "BMP280")) {
+        if (checkBmpStatus()) {
+          message.replace(F("{TEXT_TEMPERATURE}"), String(TEXT_TEMPERATURE));
+          message.replace(F("{TEXT_PRESSURE}"), String(TEXT_PRESSURE));
+
+          message.replace(F("{Temperature}"), String(int(currentTemperature)));
+          message.replace(F("{Pressure}"), String(int(currentPressure)));
+          message.replace(F("{TEXT_HUMIDITY}: {Humidity} %"), "");
+          message.replace(F("{TEXT_DEWPOINT}: {Pressure} °C"), "");
+        } else {
+          message.replace(F("{TEXT_TEMPERATURE}: {Temperature} °C"), "");
+          message.replace(F("{TEXT_HUMIDITY}: {Humidity} %"), "");
+          message.replace(F("{TEXT_PRESSURE}: {Pressure} hPa"), "");
+          message.replace(F("{TEXT_DEWPOINT}: {Dewpoint} °C"), "");
+        }
+      } else if (!strcmp(THP_MODEL, "SHT1x")) {
+        if (checkSHT1xStatus()) {
+          message.replace(F("{TEXT_TEMPERATURE}"), String(TEXT_TEMPERATURE));
+          message.replace(F("{TEXT_HUMIDITY}"), String(TEXT_HUMIDITY));
+          message.replace(F("{TEXT_DEWPOINT}"), String(TEXT_DEWPOINT));
+
+          message.replace(F("{Temperature}"), String(int(currentTemperature)));
+          message.replace(F("{TEXT_PRESSURE}: {Pressure} hPa"), "");
+          message.replace(F("{Humidity}"), String(float(currentHumidity)));
+          message.replace(F("{Dewpoint}"), String(int(pow((currentHumidity) / 100, 0.125) * (112 + 0.9 * (currentTemperature)) + 0.1 * (currentTemperature) - 112)));
+        } else {
+          message.replace(F("{TEXT_TEMPERATURE}: {Temperature} °C"), "");
+          message.replace(F("{TEXT_HUMIDITY}: {Humidity} %"), "");
+          message.replace(F("{TEXT_PRESSURE}: {Pressure} hPa"), "");
+          message.replace(F("{TEXT_DEWPOINT}: {Dewpoint} °C"), "");
+        }
+      }
+
+    }
+  }
+
+  if (strcmp(DUST_MODEL, "Non")) {
+    if (var == F("{WEB_ROOT_PAGE_MEASUREMENTS_AIR}")) {
+      message += String(WEB_ROOT_PAGE_MEASUREMENTS_AIR);
+      message.replace(F("{TEXT_AIRPOLLUTION}"), String(TEXT_AIRPOLLUTION));
+
+      if (DISPLAY_PM1) {
+        message.replace(F("{averagePM1}"), String(averagePM1));
+      } else {
+        message.replace(F("PM1: {averagePM1} µg/m³"), "");
+      }
+
+      if (averagePM25 <= 10) {
+        message.replace(F("{colorAveragePM25}"), F("<font color='#61EEE4'>"));
+      } else if (averagePM25 > 10 && averagePM25 <= 20) {
+        message.replace(F("{colorAveragePM25}"), F("<font color='#5BCAAA'>"));
+      } else if (averagePM25 > 20 && averagePM25 <= 25) {
+        message.replace(F("{colorAveragePM25}"), F("<font color='#EEE25D'>"));
+      } else if (averagePM25 > 25 && averagePM25 <= 50) {
+        message.replace(F("{colorAveragePM25}"), F("<font color='#F95459'>"));
+      } else if (averagePM25 > 50) {
+        message.replace(F("{colorAveragePM25}"), F("<font color='#920736'>"));
+      } else {
+        message.replace(F("{colorAveragePM25}"), F("<font>"));
+      }
+
+      message.replace(F("{averagePM25}"), String(averagePM25) + F("</font>"));
+
+      if (averagePM10 <= 20) {
+        message.replace(F("{colorAveragePM10}"), F("<font color='#61EEE4'>"));
+      } else if (averagePM10 > 20 && averagePM10 <= 35) {
+        message.replace(F("{colorAveragePM10}"), F("<font color='#5BCAAA'>"));
+      } else if (averagePM10 > 35 && averagePM10 <= 50) {
+        message.replace(F("{colorAveragePM10}"), F("<font color='#EEE25D'>"));
+      } else if (averagePM10 > 50 && averagePM10 <= 100) {
+        message.replace(F("{colorAveragePM10}"), F("<font color='#F95459'>"));
+      } else if (averagePM10 > 100) {
+        message.replace(F("{colorAveragePM10}"), F("<font color='#920736'>"));
+      } else {
+        message.replace(F("{colorAveragePM10}"), F("<font>"));
+      }
+      message.replace(F("{averagePM10}"), String(averagePM10) + F("</font>"));
+    }
+  } else {
+    if (var == F("{WEB_ROOT_PAGE_MEASUREMENTS_AIR}")) {
+      message += "";
+    }
+  }
+
+  if (AIRMONITOR_GRAPH_ON) {
+    if (var == F("{WEB_ROOT_PAGE_AIRMONITOR_GRAPH}")) {
+      message += String(WEB_ROOT_PAGE_AIRMONITOR_GRAPH);
+      message.replace(F("{LATITUDE}"), String(LATITUDE));
+      message.replace(F("{LONGITUDE}"), String(LONGITUDE));
+    }
+  } else {
+    if (var == F("{WEB_ROOT_PAGE_AIRMONITOR_GRAPH}")) {
+      message += "";
+    }
+  }
+  
+  if (LUFTDATEN_GRAPH_ON) {
+      if (var == F("{WEB_ROOT_PAGE_LUFTDATEN_GRAPH}")) {
+          message += String(WEB_ROOT_PAGE_LUFTDATEN_GRAPH);
+          message.replace(F("{NODE_LUFTDATEN_ID}"), String(LUFTDATEN_APIID));
+      }
+  } else {
+    if (var == F("{WEB_ROOT_PAGE_LUFTDATEN_GRAPH}")) {
+      message += "";
+    }
+  }
+
+  if (THINGSPEAK_GRAPH_ON) {
+    if (var == F("{WEB_ROOT_PAGE_THINGSPEAK_GRAPH}")) {
+      message += String(WEB_ROOT_PAGE_THINGSPEAK_GRAPH);
+      message.replace(F("{THINGSPEAK_CHANNEL_ID}"), String(THINGSPEAK_CHANNEL_ID));
+      message.replace(F("{THINGSPEAK_READ_API_KEY}"), String(THINGSPEAK_READ_API_KEY));
+    }
+  } else {
+    if (var == F("{WEB_ROOT_PAGE_THINGSPEAK_GRAPH}")) {
+      message += "";
+    }
+  }
+
+  return message;
+  message = "";
+}
+
+static void handle_root(AsyncWebServerRequest *request) {
+  if (DEBUG) {
+    Serial.print(F("sizeof(WEB_ROOT_PAGE_ALL): "));
+    Serial.println(sizeof(WEB_ROOT_PAGE_ALL)); // sizeof(WEB_ROOT_PAGE_ALL): ~2255
+    Serial.print(F("\n"));
+  }
+
+  request->send_P(200, "text/html", WEB_ROOT_PAGE_ALL, handle_root_processor);
+}
+
+
+static void handle_api(AsyncWebServerRequest *request) {
+  String message;
+  StaticJsonDocument<800> jsonBuffer;
+  JsonObject json = jsonBuffer.to<JsonObject>();
+
+  json[F("device_name")] = device_name;
+  if (strcmp(DUST_MODEL, "Non")) {
+    json[F("pm1")] = averagePM1;
+    json[F("pm25")] = averagePM25;
+    if (!strcmp(DUST_MODEL, "SPS30")) {
+      json[F("pm4")] = averagePM4;
+    }
+    json[F("pm10")] = averagePM10;
+  }
+  if (strcmp(THP_MODEL, "Non")) {
+    takeTHPMeasurements();
+  }
+  if (!strcmp(THP_MODEL, "BME280")) {
+    if (checkBmeStatus()) {
+      json[F("temperature")] = float(currentTemperature);
+      json[F("pressure")] = int(currentPressure);
+      json[F("humidity")] = int(currentHumidity);
+      json[F("dewpoint")] = float(pow((currentHumidity) / 100, 0.125) * (112 + 0.9 * (currentTemperature)) + 0.1 * (currentTemperature) - 112);
+    }
+  }
+  if (!strcmp(THP_MODEL, "BMP280")) {
+    if (checkBmpStatus()) {
+      json[F("temperature")] = float(currentTemperature);
+      json[F("pressure")] = int(currentPressure);
+    }
+  }
+  if (!strcmp(THP_MODEL, "HTU21")) {
+    if (checkHTU21DStatus()) {
+      json[F("temperature")] = float(currentTemperature);
+      json[F("humidity")] = int(currentHumidity);
+      json[F("dewpoint")] = float(pow((currentHumidity) / 100, 0.125) * (112 + 0.9 * (currentTemperature)) + 0.1 * (currentTemperature) - 112);
+    }
+  }
+  if (!strcmp(THP_MODEL, "DHT22")) {
+    if (checkDHT22Status()) {
+      json[F("temperature")] = float(currentTemperature);
+      json[F("humidity")] = int(currentHumidity);
+      json[F("dewpoint")] = float(pow((currentHumidity) / 100, 0.125) * (112 + 0.9 * (currentTemperature)) + 0.1 * (currentTemperature) - 112);
+    }
+  }
+  if (!strcmp(THP_MODEL, "SHT1x")) {
+    if (checkSHT1xStatus()) {
+      json[F("temperature")] = float(currentTemperature);
+      json[F("humidity")] = int(currentHumidity);
+      json[F("dewpoint")] = float(pow((currentHumidity) / 100, 0.125) * (112 + 0.9 * (currentTemperature)) + 0.1 * (currentTemperature) - 112);
+    }
+  }
+
+  serializeJsonPretty(json, message);
+  //WebServer.send(200, "text/json", message);
+  request->send(200, "text/json", message);
+}
 
 void setup() {
   Serial.begin(115200);
@@ -1072,11 +1401,11 @@ void setup() {
 
   // check update
   unsigned char checkUpdate_x = 0;
-  if (checkUpdate(checkUpdate_x) == true) {
-    need_update = true;
-  } else {
-    need_update = false;
-  }
+  // if (checkUpdate(checkUpdate_x) == true) {
+  //   need_update = true;
+  // } else {
+  //   need_update = false;
+  // }
 
   if (MQTT_ON) {
     mqttclient.setServer(MQTT_HOST, MQTT_PORT);
@@ -1094,18 +1423,18 @@ void setup() {
   server.on("/config_device", HTTP_GET, handle_config_device);
   server.on("/config_services_save", HTTP_GET, handle_config_services_save);
   server.on("/config_services", HTTP_GET, handle_config_services);
-  server.on("/config_adv_mqtt_save", HTTP_GET, handle_adv_mqtt_config_save);
-  server.on("/config_adv_mqtt", HTTP_GET, handle_adv_mqtt_config);
-  server.on("/update", HTTP_GET, handle_update);
-  server.on("/update_done", HTTP_POST, handle_update_done, handle_update_progress_cb);
+  // server.on("/config_adv_mqtt_save", HTTP_GET, handle_adv_mqtt_config_save);
+  // server.on("/config_adv_mqtt", HTTP_GET, handle_adv_mqtt_config);
+  // server.on("/update", HTTP_GET, handle_update);
+  // server.on("/update_done", HTTP_POST, handle_update_done, handle_update_progress_cb);
   server.on("/api", HTTP_GET, handle_api);
   server.on("/erase_wifi", HTTP_GET, erase_wifi);
   server.on("/restore_config", HTTP_GET, restore_config);
   server.on("/fwupdate", HTTP_GET, fwupdate);
   server.on("/autoupdate_on", HTTP_GET, autoupdate_on);
-  server.on("/homekit_reset", HTTP_GET, homekit_reset);
-  server.on("/homekit_on", HTTP_GET, homekit_on);
-  server.on("/homekit_off", HTTP_GET, homekit_off);
+  // server.on("/homekit_reset", HTTP_GET, homekit_reset);
+  // server.on("/homekit_on", HTTP_GET, homekit_on);
+  // server.on("/homekit_off", HTTP_GET, homekit_off);
   //server.on("/logout", HTTP_GET, logout);
   server.onNotFound(handle_root);
 #else
@@ -1165,7 +1494,7 @@ void setup() {
   //  WebServer Config - End
 #endif
 
-  // Check if config.h exist in ESP data folder
+  // Check if defaultConfig.hpp exist in ESP data folder
 #ifdef ASYNC_WEBSERVER_ON
 
   // https://github.com/me-no-dev/ESPAsyncWebServer/issues/1080#issuecomment-954891157
@@ -1676,21 +2005,21 @@ void loop() {
     Serial.print(F("========================================\n"));
   */
 
-  if (need_update == true && AUTOUPDATE_ON) {
-    for (int i = 0; i < 5 ; i++) {
-      unsigned char x = 0;
-      doUpdate(x);
+//   if (need_update == true && AUTOUPDATE_ON) {
+//     for (int i = 0; i < 5 ; i++) {
+//       unsigned char x = 0;
+//       doUpdate(x);
 
-#ifdef ASYNC_WEBSERVER_ON
-      yield();
-      delay(1000);
+// #ifdef ASYNC_WEBSERVER_ON
+//       yield();
+//       delay(1000);
 
-#else
-      delay(1000);
-#endif
+// #else
+//       delay(1000);
+// #endif
 
-    }
-  }
+//     }
+//   }
 
   yield();
 
@@ -2045,3 +2374,4 @@ uint8_t pm10_air_quality_level(float input_value, uint8_t min, uint8_t max) {
 }
 // #endif
 // HomeKit -- END
+

@@ -1,4 +1,4 @@
-#pragma once
+#include "defaultConfig.hpp"
 
 bool DEVICENAME_AUTO = true;
 char DEVICENAME[32] = "Smogly1"; // Bez polskich znakow!! // Without Polish letters!!

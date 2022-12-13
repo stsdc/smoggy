@@ -1,5 +1,6 @@
-#pragma once
-
+// #pragma once
+#ifndef WEBSERVER_H
+#define WEBSERVER_H
 /*
 Default - webserver.h is not used. Instead, we use Asyncwebserver.h.
 */
@@ -14,6 +15,16 @@ Default - webserver.h is not used. Instead, we use Asyncwebserver.h.
 #include <ArduinoJson.h> // 6.9.0 or later
 #include "smogly_spiffs.h"
 #include <FS.h>
+
+#include "../lib/html/html-content.h"
+
+#include "../lib/html/html-root.h"
+#include "../lib/html/html-defaultConfig.hpp"
+#include "../lib/html/html-config-device.h"
+#include "../lib/html/html-config-services.h"
+#include "../lib/html/html-config-adv-mqtt.h"
+#include "../lib/html/html-update.h"
+
 
 const char* www_realm PROGMEM = "Custom Auth Realm";
 String authFailResponse = "<meta http-equiv='refresh' content='0; url=/' /> Authentication Failed! <p><a href='/'>Redirect</a></p>";
@@ -1449,7 +1460,7 @@ void handle_config_device_post() {
     }
   }
 
-  // REMEMBER TO ADD/EDIT KEYS IN config.h AND spiffs.cpp!!
+  // REMEMBER TO ADD/EDIT KEYS IN defaultConfig.hpp AND spiffs.cpp!!
   DEVICENAME_AUTO = _parseAsBool(WebServer.arg("DEVICENAME_AUTO"));
   if (!DEVICENAME_AUTO) {
     _parseAsCString(DEVICENAME, WebServer.arg("DEVICENAME"), 32);
@@ -1612,7 +1623,7 @@ void handle_config_services_post() {
     }
   }
 
-  // REMEMBER TO ADD/EDIT KEYS IN config.h AND spiffs.cpp!!
+  // REMEMBER TO ADD/EDIT KEYS IN defaultConfig.hpp AND spiffs.cpp!!
   SENDING_FREQUENCY = WebServer.arg("SENDING_FREQUENCY").toInt();
   SENDING_DB_FREQUENCY = WebServer.arg("SENDING_DB_FREQUENCY").toInt();
 
@@ -1677,7 +1688,7 @@ void handle_adv_mqtt_config_post() {
     }
   }
 
-  // REMEMBER TO ADD/EDIT KEYS IN config.h AND spiffs.cpp!!
+  // REMEMBER TO ADD/EDIT KEYS IN defaultConfig.hpp AND spiffs.cpp!!
    MQTT_ON = _parseAsBool(WebServer.arg("MQTT_ON"));
   _parseAsCString(MQTT_HOST, WebServer.arg("MQTT_HOST"), 128);
   MQTT_PORT = WebServer.arg("MQTT_PORT").toInt();
@@ -1979,3 +1990,5 @@ void homekit_off() {
   Serial.println(F("Restart"));
   ESP.restart();
 }
+
+#endif

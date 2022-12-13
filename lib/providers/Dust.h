@@ -3,13 +3,20 @@
 
 #include <Arduino.h>
 
-#include "config.h"
-#include "../include/defaultConfig.h"
+// #include "defaultConfig.hpp"
+#include "../include/defaultConfig.hpp"
 
 #ifdef ASYNC_WEBSERVER_ON
-#include "../lib/smogly_asyncwebserver.h"
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 #else
-#include "../lib/smogly_webserver.h"
+#include <WebServer.h>
+#endif
+
+#ifdef ASYNC_WEBSERVER_ON
+#include "../lib/smogly_asyncwebserver.hpp"
+#else
+// #include "../lib/smogly_webserver.hpp"
 #endif
 
 

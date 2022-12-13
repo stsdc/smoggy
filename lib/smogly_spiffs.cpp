@@ -1,11 +1,6 @@
-#include <ArduinoJson.h>
-#include <FS.h>
-#ifdef ARDUINO_ARCH_ESP32
-#include <SPIFFS.h>
-#endif
 
-#include "../include/config.h"
-#define FORMAT_SPIFFS_IF_FAILED true
+#include "smogly_spiffs.h"
+
 
 void _safeCpy(char* dest, const JsonVariant &obj, const char* dflt = "", int CharSize = 255) {
   const char* val = obj.as<const char*>();
@@ -62,7 +57,7 @@ bool loadConfig() {
     return false;
   }
 
-  // REMEMBER TO ADD/EDIT KEYS IN config.h AND webserver.h!!
+  // REMEMBER TO ADD/EDIT KEYS IN defaultConfig.hpp AND webserver.h!!
 
   DEVICENAME_AUTO = json["DEVICENAME_AUTO"];
   _safeCpy(DEVICENAME, json["DEVICENAME"], "smogomierz", 32);
