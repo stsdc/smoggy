@@ -1,4 +1,4 @@
-#include "defaultConfig.hpp"
+#include "defaultConfig.h"
 
 bool DEVICENAME_AUTO = true;
 char DEVICENAME[32] = "Smogly1"; // Bez polskich znakow!! // Without Polish letters!!

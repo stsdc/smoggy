@@ -1,5 +1,5 @@
 
-#include "smogly_spiffs.h"
+#include "smogly_spiffs.hpp"
 
 
 void _safeCpy(char* dest, const JsonVariant &obj, const char* dflt = "", int CharSize = 255) {

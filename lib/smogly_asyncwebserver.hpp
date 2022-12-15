@@ -11,10 +11,10 @@
 #endif
 
 #include <ArduinoJson.h> // 6.9.0 or later
-#include "../lib/smogly_spiffs.hpp"
+// #include "../lib/smogly_spiffs.hpp"
 #include <FS.h>
 
-#include "../providers/TemperatureHumidityPressure.h"
+// #include "../src/TemperatureHumidityPressure.h"
 
 #include "../lib/html/html-content.h"
 
@@ -25,18 +25,8 @@
 #include "../lib/html/html-config-adv-mqtt.h"
 #include "../lib/html/html-update.h"
 
-#ifdef INTL_OLD
-#include "../lib/intl/default_intl.h"
-#include "../include/translator.h"
-#endif
+#include "../include/text.hpp"
 
-#ifdef INTL_EN
-#include "intl/new_default_intl.h"
-#endif
-
-#ifdef INTL_PL
-#include "intl/new_intl_pl.h"
-#endif
 
 // static String handle_root_processor(const String& var)
 // {
@@ -314,22 +304,22 @@ static String _add_FIRST_THP_Option(const String &value, const String &label, co
   String option = FPSTR(WEB_CONFIG_PAGE_ADDOPTION);
   option.replace(F("{value}"), value);
     
-  if (strcmp(DUST_MODEL, "Non")) {
-    if (String(CONFIG_DUST_TX) == value) {
-      option.replace(F("{srslyValue}"), F("disabled>"));
-    }
-    if (String(CONFIG_DUST_RX) == value) {
-      option.replace(F("{srslyValue}"), F("disabled>"));
-    }
-    if (SECOND_THP) {
-      if (String(CONFIG_SECOND_THP_SDA) == value) {
-        option.replace(F("{srslyValue}"), F("disabled>"));
-      }
-      if (String(CONFIG_SECOND_THP_SCL) == value) {
-        option.replace(F("{srslyValue}"), F("disabled>"));
-      }
-    }
-  }
+  // if (strcmp(DUST_MODEL, "Non")) {
+  //   if (String(CONFIG_DUST_TX) == value) {
+  //     option.replace(F("{srslyValue}"), F("disabled>"));
+  //   }
+  //   if (String(CONFIG_DUST_RX) == value) {
+  //     option.replace(F("{srslyValue}"), F("disabled>"));
+  //   }
+  //   if (SECOND_THP) {
+  //     if (String(CONFIG_SECOND_THP_SDA) == value) {
+  //       option.replace(F("{srslyValue}"), F("disabled>"));
+  //     }
+  //     if (String(CONFIG_SECOND_THP_SCL) == value) {
+  //       option.replace(F("{srslyValue}"), F("disabled>"));
+  //     }
+  //   }
+  // }
   
   if (value == srslyValue) {
     option.replace(F("{srslyValue}"), F(" selected>"));
@@ -345,22 +335,22 @@ static String _add_SECOND_THP_Option(const String &value, const String &label, c
   String option = FPSTR(WEB_CONFIG_PAGE_ADDOPTION);
   option.replace(F("{value}"), value);
 
-  if (strcmp(DUST_MODEL, "Non")) {
-    if (String(CONFIG_DUST_TX) == value) {
-      option.replace(F("{srslyValue}"), F("disabled>"));
-    }
-    if (String(CONFIG_DUST_RX) == value) {
-      option.replace(F("{srslyValue}"), F("disabled>"));
-    }
-    if (strcmp(DUST_MODEL, "Non")) {
-      if (String(CONFIG_FIRST_THP_SDA) == value) {
-        option.replace(F("{srslyValue}"), F("disabled>"));
-      }
-      if (String(CONFIG_FIRST_THP_SCL) == value) {
-        option.replace(F("{srslyValue}"), F("disabled>"));
-      }
-    }
-  }
+  // if (strcmp(DUST_MODEL, "Non")) {
+  //   if (String(CONFIG_DUST_TX) == value) {
+  //     option.replace(F("{srslyValue}"), F("disabled>"));
+  //   }
+  //   if (String(CONFIG_DUST_RX) == value) {
+  //     option.replace(F("{srslyValue}"), F("disabled>"));
+  //   }
+  //   if (strcmp(DUST_MODEL, "Non")) {
+  //     if (String(CONFIG_FIRST_THP_SDA) == value) {
+  //       option.replace(F("{srslyValue}"), F("disabled>"));
+  //     }
+  //     if (String(CONFIG_FIRST_THP_SCL) == value) {
+  //       option.replace(F("{srslyValue}"), F("disabled>"));
+  //     }
+  //   }
+  // }
 
   if (value == srslyValue) {
     option.replace(F("{srslyValue}"), F(" selected>"));
@@ -375,22 +365,22 @@ static String _add_DUST_Option(const String &value, const String &label, const S
   String option = FPSTR(WEB_CONFIG_PAGE_ADDOPTION);
   option.replace(F("{value}"), value);
 
-  if (strcmp(THP_MODEL, "Non")) {
-    if (String(CONFIG_FIRST_THP_SDA) == value) {
-      option.replace(F("{srslyValue}"), F("disabled>"));
-    }
-    if (String(CONFIG_FIRST_THP_SCL) == value) {
-      option.replace(F("{srslyValue}"), F("disabled>"));
-    }
-    if (SECOND_THP) {
-      if (String(CONFIG_SECOND_THP_SDA) == value) {
-        option.replace(F("{srslyValue}"), F("disabled>"));
-      }
-      if (String(CONFIG_SECOND_THP_SCL) == value) {
-        option.replace(F("{srslyValue}"), F("disabled>"));
-      }
-    }
-  }
+  // if (strcmp(THP_MODEL, "Non")) {
+  //   if (String(CONFIG_FIRST_THP_SDA) == value) {
+  //     option.replace(F("{srslyValue}"), F("disabled>"));
+  //   }
+  //   if (String(CONFIG_FIRST_THP_SCL) == value) {
+  //     option.replace(F("{srslyValue}"), F("disabled>"));
+  //   }
+  //   if (SECOND_THP) {
+  //     if (String(CONFIG_SECOND_THP_SDA) == value) {
+  //       option.replace(F("{srslyValue}"), F("disabled>"));
+  //     }
+  //     if (String(CONFIG_SECOND_THP_SCL) == value) {
+  //       option.replace(F("{srslyValue}"), F("disabled>"));
+  //     }
+  //   }
+  // }
 
   if (value == srslyValue) {
     option.replace(F("{srslyValue}"), F(" selected>"));
@@ -2490,7 +2480,7 @@ static void handle_config_device_save(AsyncWebServerRequest *request) {
   if (need_update != 0) {
     strcpy(THP_MODEL, "Non");
     strcpy(DUST_MODEL, "Non");
-    saveConfig();
+    // saveConfig();
     //_handle_config_device(true);
 	unsigned char x = 0;
     if (need_update == 1) {
@@ -2518,7 +2508,7 @@ static void handle_config_device_save(AsyncWebServerRequest *request) {
     Serial.println(F("POST DEVICE CONFIG END!!"));
   }
 
-  saveConfig();
+  // saveConfig();
   //delay(250);
   //_handle_config_device(true);
   // https://github.com/esp8266/Arduino/issues/1722
@@ -2698,7 +2688,7 @@ static void handle_config_services_save(AsyncWebServerRequest *request) {
   // request->redirect("/");
   delay(100);
   
-  saveConfig();
+  // saveConfig();
   //delay(250);
   //_handle_config_services(true);
   // https://github.com/esp8266/Arduino/issues/1722
@@ -2943,7 +2933,7 @@ static void restore_config(AsyncWebServerRequest *request) {
       return request->requestAuthentication();
   }
   Serial.println(F("Restoring default settings..."));
-  deleteConfig();
+  // deleteConfig();
 
   request->redirect("/");
   delay(1000);
@@ -3057,7 +3047,7 @@ static void autoupdate_on(AsyncWebServerRequest *request) {
       return request->requestAuthentication();
   }
   AUTOUPDATE_ON = true;
-  saveConfig();
+  // saveConfig();
 
   request->redirect("/");
   delay(1000);

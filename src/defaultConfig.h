@@ -1,6 +1,6 @@
 #ifndef DEFAULT_CONF_H
 #define DEFAULT_CONF_H
-
+#include <Arduino.h>
 
 extern bool DEVICENAME_AUTO;
 extern char DEVICENAME[32]; // Bez polskich znakow!! // Without Polish letters!!
@@ -12,8 +12,8 @@ extern char THP_MODEL[12];
 extern char DUST_MODEL[12];
 extern bool FREQUENTMEASUREMENT;
 
-bool SECOND_THP;
-char SECOND_THP_MODEL[12];
+extern bool SECOND_THP;
+extern char SECOND_THP_MODEL[12];
 
 #ifdef ARDUINO_ARCH_ESP8266
 char CONFIG_FIRST_THP_SDA[4];
@@ -21,10 +21,10 @@ char CONFIG_FIRST_THP_SCL[4];
 unsigned char FIRST_THP_SDA; // D3
 unsigned char FIRST_THP_SCL; // D4
 #elif defined ARDUINO_ARCH_ESP32
-char CONFIG_FIRST_THP_SDA[4];
-char CONFIG_FIRST_THP_SCL[4];
-unsigned char FIRST_THP_SDA; // D16
-unsigned char FIRST_THP_SCL; // D17
+extern char CONFIG_FIRST_THP_SDA[4];
+extern char CONFIG_FIRST_THP_SCL[4];
+extern unsigned char FIRST_THP_SDA; // D16
+extern unsigned char FIRST_THP_SCL; // D17
 #endif
 
 #ifdef ARDUINO_ARCH_ESP8266
@@ -33,10 +33,10 @@ char CONFIG_SECOND_THP_SCL[4];
 unsigned char SECOND_THP_SDA4; // D5
 unsigned char SECOND_THP_SCL2; // D6
 #elif defined ARDUINO_ARCH_ESP32
-char CONFIG_SECOND_THP_SDA[4];
-char CONFIG_SECOND_THP_SCL[4];
-unsigned char SECOND_THP_SDA2; // D5
-unsigned char SECOND_THP_SCL3; // D6
+extern char CONFIG_SECOND_THP_SDA[4];
+extern char CONFIG_SECOND_THP_SCL[4];
+extern unsigned char SECOND_THP_SDA2; // D5
+extern unsigned char SECOND_THP_SCL3; // D6
 #endif
 
 #ifdef ARDUINO_ARCH_ESP8266
@@ -45,10 +45,10 @@ char CONFIG_DUST_RX[4];
 unsigned char DUST_TX; // D1
 unsigned char DUST_RX; // D2
 #elif defined ARDUINO_ARCH_ESP32
-char CONFIG_DUST_TX[4];
-char CONFIG_DUST_RX[4];
-unsigned char DUST_TX8; // D1
-unsigned char DUST_RX9; // D2
+extern char CONFIG_DUST_TX[4];
+extern char CONFIG_DUST_RX[4];
+extern unsigned char DUST_TX8; // D1
+extern unsigned char DUST_RX9; // D2
 #endif
 
 /*
@@ -90,51 +90,51 @@ extern char INFLUXDB_ORG[32];
 extern char INFLUXDB_BUCKET[32];
 extern char INFLUXDB_TOKEN[128];
 
-bool MQTT_ON;
-char MQTT_HOST[128];
-uint16_t MQTT_PORT;
-char MQTT_USER[32];
-char MQTT_PASSWORD[64];
+extern bool MQTT_ON;
+extern char MQTT_HOST[128];
+extern uint16_t MQTT_PORT;
+extern char MQTT_USER[32];
+extern char MQTT_PASSWORD[64];
 
-bool MQTT_IP_IN_TOPIC;
-bool MQTT_DEVICENAME_IN_TOPIC;
-bool MQTT_SLASH_AT_THE_BEGINNING;
-bool MQTT_SLASH_AT_THE_END;
+extern bool MQTT_IP_IN_TOPIC;
+extern bool MQTT_DEVICENAME_IN_TOPIC;
+extern bool MQTT_SLASH_AT_THE_BEGINNING;
+extern bool MQTT_SLASH_AT_THE_END;
 
-char MQTT_TOPIC_TEMP[64];
-char MQTT_TOPIC_HUMI[64];
-char MQTT_TOPIC_PRESS[64];
-char MQTT_TOPIC_PM1[64];
-char MQTT_TOPIC_PM25[64];
-char MQTT_TOPIC_PM10[64];
-char MQTT_TOPIC_AIRQUALITY[32];
+extern char MQTT_TOPIC_TEMP[64];
+extern char MQTT_TOPIC_HUMI[64];
+extern char MQTT_TOPIC_PRESS[64];
+extern char MQTT_TOPIC_PM1[64];
+extern char MQTT_TOPIC_PM25[64];
+extern char MQTT_TOPIC_PM10[64];
+extern char MQTT_TOPIC_AIRQUALITY[32];
 
-bool AQI_ECO_ON;
-char AQI_ECO_HOST[64];
-char AQI_ECO_PATH[64];
+extern bool AQI_ECO_ON;
+extern char AQI_ECO_HOST[64];
+extern char AQI_ECO_PATH[64];
 
-unsigned char SENDING_FREQUENCY;
-unsigned char SENDING_DB_FREQUENCY;
-bool DEEPSLEEP_ON ;
+extern unsigned char SENDING_FREQUENCY;
+extern unsigned char SENDING_DB_FREQUENCY;
+extern bool DEEPSLEEP_ON ;
 
-bool DEBUG;
+extern bool DEBUG;
 #ifdef ARDUINO_ARCH_ESP8266
 bool AUTOUPDATE_ON;
 #elif defined ARDUINO_ARCH_ESP32
-bool AUTOUPDATE_ON;
+extern bool AUTOUPDATE_ON;
 #endif
 
-bool CONFIG_AUTH;
-char CONFIG_USERNAME[64];
-char CONFIG_PASSWORD[128];
+extern bool CONFIG_AUTH;
+extern char CONFIG_USERNAME[64];
+extern char CONFIG_PASSWORD[128];
 
-char MODEL[12];
-float calib1;
-float calib2;
+extern char MODEL[12];
+extern float calib1;
+extern float calib2;
 
-bool HOMEKIT_SUPPORT;
+extern bool HOMEKIT_SUPPORT;
 
-#ifdef DUSTSENSOR_PMS5003_7003_BME280_0x76 || DUSTSENSOR_PMS5003_7003_BME280_0x77
+#if defined(DUSTSENSOR_PMS5003_7003_BME280_0x76) || defined(DUSTSENSOR_PMS5003_7003_BME280_0x77)
 const char PMSENSORVERSION[] PROGMEM = "PMS";
 #elif defined DUSTSENSOR_SDS011_21
 const char PMSENSORVERSION[] PROGMEM = "SDS";

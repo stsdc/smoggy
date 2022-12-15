@@ -1,16 +1,5 @@
-#ifdef ARDUINO_ARCH_ESP8266
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
-#include <WiFiClient.h>
-#include <ESP8266HTTPClient.h>
-#elif defined ARDUINO_ARCH_ESP32
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <HTTPClient.h>
-#endif
 
-#include <ArduinoJson.h>
-#include "../include/defaultConfig.hpp"
+#include "luftdaten.h"
 
 const char *luftdatenAPIHOST PROGMEM = "api.luftdaten.info";
 const char *luftdatenAPIURL PROGMEM = "/v1/push-sensor-data/";
@@ -878,8 +867,8 @@ void sendTHPDatatoMadavide(float & currentTemperature, float & currentPressure, 
 }
 #endif
 
-bool getLuftdatenJSON(float LATITUDE, float LONGITUDE) {
-	String url_string = ("http://data.sensor.community/airrohr/v1/filter/box=" + String(LATITUDE, 6) + "00000," + String(LONGITUDE, 6) + "00000," + String(LATITUDE, 6) + "00000," + String(LONGITUDE, 6) + "00000");
+bool getLuftdatenJSON(float lat, float longti) {
+	String url_string = ("http://data.sensor.community/airrohr/v1/filter/box=" + String(lat, 6) + "00000," + String(longti, 6) + "00000," + String(LATITUDE, 6) + "00000," + String(LONGITUDE, 6) + "00000");
 		
     // Check WiFi Status
     if (WiFi.status() == WL_CONNECTED) {
@@ -940,7 +929,7 @@ String temp_DUSTMODEL_Luftdaten = "PMS7003";
 
  for (int i = 0; i < json.size(); i++) {	
  	if (String(json[i]["sensor"]["id"].as<String>()) != "null") {
-#ifdef DUSTSENSOR_PMS5003_7003_BME280_0x76 || DUSTSENSOR_PMS5003_7003_BME280_0x77
+#if defined(DUSTSENSOR_PMS5003_7003_BME280_0x76) || defined(DUSTSENSOR_PMS5003_7003_BME280_0x77)
 		if (String(json[i]["sensor"]["sensor_type"]["name"].as<String>()) == "PMS7003" or String(json[i]["sensor"]["sensor_type"]["name"].as<String>()) == "PMS5003") {
 #elif defined DUSTSENSOR_SDS011_21
 			if (String(json[i]["sensor"]["sensor_type"]["name"].as<String>()) == "SDS021" or String(json[i]["sensor"]["sensor_type"]["name"].as<String>()) == "SDS011") {

@@ -2,9 +2,9 @@
 #define DUST_H
 
 #include <Arduino.h>
+#include "defaultConfig.h"
 
-// #include "defaultConfig.hpp"
-#include "../include/defaultConfig.hpp"
+// #include "../include/defaultConfig.hpp"
 
 #ifdef ASYNC_WEBSERVER_ON
 #include <AsyncTCP.h>
@@ -27,7 +27,7 @@
 // #define DUSTSENSOR_HPMA115S0 // Honeywell HPMA115S0
 // #define DUSTSENSOR_SPS30 // Sensirion SPS30
 
-#ifdef DUSTSENSOR_PMS5003_7003_BME280_0x76 or DUSTSENSOR_PMS5003_7003_BME280_0x77
+#if defined(DUSTSENSOR_PMS5003_7003_BME280_0x76) || defined(DUSTSENSOR_PMS5003_7003_BME280_0x77)
 #include "PMS.h" // https://github.com/fu-hsi/PMS // 5.11.2021
 #elif defined DUSTSENSOR_SDS011_21
 #ifdef ARDUINO_ARCH_ESP8266
@@ -46,7 +46,7 @@
 
 // DUST Sensor config - START
 
-#ifdef DUSTSENSOR_PMS5003_7003_BME280_0x76 or DUSTSENSOR_PMS5003_7003_BME280_0x77
+#if defined(DUSTSENSOR_PMS5003_7003_BME280_0x76) || defined(DUSTSENSOR_PMS5003_7003_BME280_0x77)
 //***PMSx003 - START***
 #ifdef ARDUINO_ARCH_ESP8266
 #ifdef ARDUINO_ESP8266_RELEASE_2_6_0
@@ -137,7 +137,7 @@ static unsigned char iPM = 0;
 unsigned int previous_2sec_Millis = 0;
 static unsigned short TwoSec_interval = 2 * 1000; // 2 second
 
-void pm_calibration();
+void pm_calibration(float temperature, float humidity);
 void takeNormalnPMMeasurements();
 void takeSleepPMMeasurements();
 

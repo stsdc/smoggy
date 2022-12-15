@@ -19,7 +19,7 @@ Default - webserver.h is not used. Instead, we use Asyncwebserver.h.
 #include "../lib/html/html-content.h"
 
 #include "../lib/html/html-root.h"
-#include "../lib/html/html-defaultConfig.hpp"
+#include "../lib/html/html-config.h"
 #include "../lib/html/html-config-device.h"
 #include "../lib/html/html-config-services.h"
 #include "../lib/html/html-config-adv-mqtt.h"

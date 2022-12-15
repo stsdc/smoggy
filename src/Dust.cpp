@@ -1,10 +1,9 @@
 #include "Dust.h"
-#include"../lib/providers/TemperatureHumidityPressure.h"
 
 static float calib = 1;
 
 
-void pm_calibration() {
+void pm_calibration(float temperature, float humidity) {
   // Automatic calibration - START
   if (!strcmp(MODEL, "white")) {
     if (!strcmp(THP_MODEL, "BME280")) {
@@ -19,33 +18,33 @@ void pm_calibration() {
         calib = calib1;
       }
 #elif defined ARDUINO_ARCH_ESP32
-      if (int(bme.readTemperature()) < 5 or int(bme.readHumidity()) > 60) {
-        calib1 = float((200 - (bme.readHumidity())) / 150);
+      if (int(temperature) < 5 or int(humidity) > 60) {
+        calib1 = float((200 - (humidity)) / 150);
         calib2 = calib1 / 2;
         calib = calib2;
       } else {
         calib = calib1;
       }
 #endif
-    } else if (!strcmp(THP_MODEL, "HTU21")) {
-      if (int(ht2x.readTemperature()) < 5 or int(ht2x.getCompensatedHumidity(int(ht2x.readTemperature()))) > 60) {
-        calib1 = float((200 - (ht2x.getCompensatedHumidity(int(ht2x.readTemperature())))) / 150);
-        calib2 = calib1 / 2;
-        calib = calib2;
-      } else {
-        calib = calib1;
-      }
+    // } else if (!strcmp(THP_MODEL, "HTU21")) {
+    //   if (int(ht2x.readTemperature()) < 5 or int(ht2x.getCompensatedHumidity(int(ht2x.readTemperature()))) > 60) {
+    //     calib1 = float((200 - (ht2x.getCompensatedHumidity(int(ht2x.readTemperature())))) / 150);
+    //     calib2 = calib1 / 2;
+    //     calib = calib2;
+    //   } else {
+    //     calib = calib1;
+    //   }
     } else if (!strcmp(THP_MODEL, "DHT22")) {
-      if (int(dht.readTemperature()) < 5 or int(dht.readHumidity()) > 60) {
-        calib1 = float((200 - (dht.readHumidity())) / 150);
+      if (int(temperature) < 5 or int(humidity) > 60) {
+        calib1 = float((200 - (humidity)) / 150);
         calib2 = calib1 / 2;
         calib = calib2;
       } else {
         calib = calib1;
       }
     } else if (!strcmp(THP_MODEL, "SHT1x")) {
-      if (int(sht1x.readTemperatureC()) < 5 or int(sht1x.readHumidity()) > 60) {
-        calib1 = float((200 - (sht1x.readHumidity())) / 150);
+      if (int(temperature) < 5 or int(humidity) > 60) {
+        calib1 = float((200 - (humidity)) / 150);
         calib2 = calib1 / 2;
         calib = calib2;
       } else {
@@ -131,11 +130,11 @@ void averagePM() {
   }
 
 #ifdef ARDUINO_ARCH_ESP32
-  if (HOMEKIT_SUPPORT) {
-    // homekit_DeviceData.homekit_pm10_level = averagePM10;
-    // homekit_DeviceData.homekit_pm25_level = averagePM25;
-    // notify_hap();
-  }
+  // if (HOMEKIT_SUPPORT) {
+  //   // homekit_DeviceData.homekit_pm10_level = averagePM10;
+  //   // homekit_DeviceData.homekit_pm25_level = averagePM25;
+  //   // notify_hap();
+  // }
 #endif
 }
 
@@ -149,7 +148,7 @@ void takeNormalnPMMeasurements() {
   */
   // unsigned char iPM = 0;
 
-#ifdef DUSTSENSOR_PMS5003_7003_BME280_0x76 or DUSTSENSOR_PMS5003_7003_BME280_0x77
+#if defined(DUSTSENSOR_PMS5003_7003_BME280_0x76) || defined(DUSTSENSOR_PMS5003_7003_BME280_0x77)
   pmMeasurements[iPM][0] = (calib * data.PM_AE_UG_1_0);
   pmMeasurements[iPM][1] = (calib * data.PM_AE_UG_2_5);
   pmMeasurements[iPM][2] = (calib * data.PM_AE_UG_10_0);
@@ -260,7 +259,7 @@ void takeSleepPMMeasurements() {
 #endif
   }
 
-#ifdef DUSTSENSOR_PMS5003_7003_BME280_0x76 or DUSTSENSOR_PMS5003_7003_BME280_0x77 // PMSx003
+#if defined(DUSTSENSOR_PMS5003_7003_BME280_0x76) || defined(DUSTSENSOR_PMS5003_7003_BME280_0x77)
   if (!strcmp(DUST_MODEL, "PMS7003")) {
     pms.wakeUp();
 #ifndef ASYNC_WEBSERVER_ON

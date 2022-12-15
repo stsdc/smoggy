@@ -14,7 +14,7 @@
 
 
 #include <ArduinoJson.h>
-#include "../defaultConfig.hpp"
+// #include "../defaultConfig.hpp"
 
 // ********************** Config **********************
 
