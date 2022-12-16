@@ -1,27 +1,28 @@
-#ifndef TEMP_HUMI_PRES_H
-#define TEMP_HUMI_PRES_H
+// #ifndef TEMP_HUMI_PRES_H
+// #define TEMP_HUMI_PRES_H
 
 
-
-#include "defaultConfig.h"
-
-#ifdef ARDUINO_ARCH_ESP8266
-#ifndef DUSTSENSOR_PMS5003_7003_BME280_0x77
-#include "src/libs/esp8266/bme280_0x76.h" // https://github.com/zen/BME280_light // CUSTOMIZED! 5.11.2021
-#else
-#include "src/libs/esp8266/bme280_0x77.h" // https://github.com/zen/BME280_light // CUSTOMIZED! 5.11.2021
-#endif
-#elif defined ARDUINO_ARCH_ESP32
 #include <Adafruit_BME280.h> // https://github.com/Takatsuki0204/BME280-I2C-ESP32 // 5.11.2021
-#endif
 
-#include <HTU2xD_SHT2x_Si70xx.h> // https://github.com/enjoyneering/HTU2xD_SHT2x_Si70xx // 5.11.2021
-#include <Adafruit_BMP280.h> // https://github.com/adafruit/Adafruit_BMP280_Library // 5.11.2021
-#include <SHT1x.h> // https://github.com/practicalarduino/SHT1x // 5.11.2021
-#include <DHT.h> // https://github.com/adafruit/DHT-sensor-library // 5.11.2021
+// #include "../../src/defaultConfig.h"
 
-#include <OneWire.h>
-#include <DallasTemperature.h>
+// #ifdef ARDUINO_ARCH_ESP8266
+// #ifndef DUSTSENSOR_PMS5003_7003_BME280_0x77
+// #include "src/libs/esp8266/bme280_0x76.h" // https://github.com/zen/BME280_light // CUSTOMIZED! 5.11.2021
+// #else
+// #include "src/libs/esp8266/bme280_0x77.h" // https://github.com/zen/BME280_light // CUSTOMIZED! 5.11.2021
+// #endif
+// #elif defined ARDUINO_ARCH_ESP32
+// #include <Adafruit_BME280.h> // https://github.com/Takatsuki0204/BME280-I2C-ESP32 // 5.11.2021
+// #endif
+
+// #include <HTU2xD_SHT2x_Si70xx.h> // https://github.com/enjoyneering/HTU2xD_SHT2x_Si70xx // 5.11.2021
+// #include <Adafruit_BMP280.h> // https://github.com/adafruit/Adafruit_BMP280_Library // 5.11.2021
+// #include <SHT1x.h> // https://github.com/practicalarduino/SHT1x // 5.11.2021
+// #include <DHT.h> // https://github.com/adafruit/DHT-sensor-library // 5.11.2021
+
+// #include <OneWire.h>
+// #include <DallasTemperature.h>
 
 // DS18B20 – Config
 //const int DS18B20_WireBus = 14; // D5
@@ -86,8 +87,8 @@ class TemperatureHumidityPressureSensor {
         float getHumidity();
         float getPressure();
         bool getStatus();
-        void setup();
-        TemperatureHumidityPressureSensor();
+        void setup(unsigned char ,unsigned char );
+        TemperatureHumidityPressureSensor(unsigned char PIN_SDA, unsigned char PIN_SCL);
 };
 
-#endif
+// #endif

@@ -146,8 +146,7 @@
 #include <ESPmDNS.h>
 
 
-#include "Dust.h"
-#include "TemperatureHumidityPressure.h"
+
 
 #include "../lib/services/luftdaten.h"
 
@@ -158,24 +157,27 @@
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 #include <time.h>
-#include <HardwareSerial.h>
+// #include <Wire.h>
 
-#include <Wire.h>
+#include <DustSensor.h>
+#include <TemperatureHumidityPressureSensor.hpp>
 
+TemperatureHumidityPressureSensor thpSensor = TemperatureHumidityPressureSensor(21, 22);
+DustSensor dustSensor = DustSensor();
 
 static char device_name[20];
 
 static unsigned int DUST_interval = 60 * 1000; // 1 minute
-unsigned int previous_DUST_Millis = 0;
+// unsigned int previous_DUST_Millis = 0;
 
 static unsigned int SENDING_FREQUENCY_interval = 60 * 1000; // 1 minute
-unsigned int previous_SENDING_FREQUENCY_Millis = 0;
+// unsigned int previous_SENDING_FREQUENCY_Millis = 0;
 
-static unsigned int SENDING_FREQUENCY_AIRMONITOR_interval = 60 * 1000; // 1 minute
-unsigned int previous_SENDING_FREQUENCY_AIRMONITOR_Millis = 0;
+// static unsigned int SENDING_FREQUENCY_AIRMONITOR_interval = 60 * 1000; // 1 minute
+// unsigned int previous_SENDING_FREQUENCY_AIRMONITOR_Millis = 0;
 
 static unsigned int SENDING_DB_FREQUENCY_interval = 60 * 1000; // 1 minute
-unsigned int previous_SENDING_DB_FREQUENCY_Millis = 0;
+// unsigned int previous_SENDING_DB_FREQUENCY_Millis = 0;
 
 
 static unsigned int REBOOT_interval = 24 * 60 * 60 * 1000; // 24 hours
@@ -183,7 +185,7 @@ unsigned int previous_REBOOT_Millis = 0;
 
 // unsigned long time_now_temp = 0;
 
-TemperatureHumidityPressureSensor thpSensor;
+
 
 static float currentTemperature, currentHumidity, currentPressure = 0;
 // float currentTemperature_THP1, currentHumidity_THP1, currentPressure_THP1 = 0;
@@ -844,223 +846,37 @@ void setup() {
   // DUST SENSOR setup - START
 #if defined(DUSTSENSOR_PMS5003_7003_BME280_0x76) || defined(DUSTSENSOR_PMS5003_7003_BME280_0x77)
   if (!strcmp(DUST_MODEL, "PMS7003")) {
-#ifdef ARDUINO_ARCH_ESP8266
-#ifdef ARDUINO_ESP8266_RELEASE_2_6_0
-    PMS_Serial.begin(9600, DUST_TX, DUST_RX); // Change TX - D1 and RX - D2 pins -- only for esp8266 core 2.6.0
-#else
-    PMS_Serial.begin(9600); //PMSx003 serial -- esp8266 core 2.6.1 or later
-#endif
-#elif defined ARDUINO_ARCH_ESP32
-    PMS_Serial.begin(9600, SERIAL_8N1, DUST_TX, DUST_RX); //PMSx003 serial
-#endif
-    if (FREQUENTMEASUREMENT == true) {
-      pms.wakeUp();
-#ifdef ASYNC_WEBSERVER_ON
-      yield();
-      delay(500);
-#else
-      delay(500);
-#endif
-      pms.activeMode();
-    } else {
-      pms.passiveMode();
-#ifdef ASYNC_WEBSERVER_ON
-      yield();
-      delay(500);
-#else
-      delay(500);
-#endif
-      pms.sleep();
-    }
-  }
-#elif defined DUSTSENSOR_SDS011_21
-  if (!strcmp(DUST_MODEL, "SDS011/21")) {
-#ifdef ARDUINO_ARCH_ESP8266
-    sds.begin();  //SDS011/21 sensor begin
-#elif defined ARDUINO_ARCH_ESP32
-    sds_port.begin(9600, SERIAL_8N1, DUST_TX, DUST_RX);  //SDS011/21 sensor begin
-    my_sds.begin(&sds_port);
-#endif
-    if (FREQUENTMEASUREMENT == true) {
-#ifdef ARDUINO_ARCH_ESP8266
-      sds.wakeup();
-      sds.setQueryReportingMode().toString(); // ensures sensor is in 'query' reporting mode
-      sds.setContinuousWorkingPeriod().toString(); // ensures sensor has continuous working period - default but not recommended
-#elif defined ARDUINO_ARCH_ESP32
-      err = my_sds.read(&SDSpm25, &SDSpm10);
-      if (!err) {
-        Serial.println(("Data from SDS011!\n"));
-      }
-#endif
-    } else {
-#ifdef ARDUINO_ARCH_ESP8266
-      sds.setCustomWorkingPeriod(1);
-      WorkingStateResult state = sds.sleep();
-#elif defined ARDUINO_ARCH_ESP32
-      err = my_sds.read(&SDSpm25, &SDSpm10);
-      if (!err) {
-        Serial.println(("Data from SDS011!\n"));
-      }
-#endif
-    }
+// #ifdef ARDUINO_ARCH_ESP8266
+// #ifdef ARDUINO_ESP8266_RELEASE_2_6_0
+//     PMS_Serial.begin(9600, DUST_TX, DUST_RX); // Change TX - D1 and RX - D2 pins -- only for esp8266 core 2.6.0
+// #else
+//     PMS_Serial.begin(9600); //PMSx003 serial -- esp8266 core 2.6.1 or later
+// #endif
+// #elif defined ARDUINO_ARCH_ESP32
+//     PMS_Serial.begin(9600, SERIAL_8N1, DUST_TX, DUST_RX); //PMSx003 serial
+// #endif
+//     if (FREQUENTMEASUREMENT == true) {
+//       pms.wakeUp();
+// #ifdef ASYNC_WEBSERVER_ON
+//       yield();
+//       delay(500);
+// #else
+//       delay(500);
+// #endif
+//       pms.activeMode();
+//     } else {
+//       pms.passiveMode();
+// #ifdef ASYNC_WEBSERVER_ON
+//       yield();
+//       delay(500);
+// #else
+//       delay(500);
+// #endif
+//       pms.sleep();
+//     }
   }
 
-#ifdef ASYNC_WEBSERVER_ON
-  yield();
-#else
-  delay(10);
-#endif
-
-#elif defined DUSTSENSOR_HPMA115S0
-  if (!strcmp(DUST_MODEL, "HPMA115S0")) {
-#ifdef ARDUINO_ARCH_ESP8266
-    hpmaSerial.begin(9600); //HPMA115S0 serial
-#elif defined ARDUINO_ARCH_ESP32
-    hpmaSerial.begin(9600, SERIAL_8N1, DUST_TX, DUST_RX); //HPMA115S0 serial
-#endif
-#ifdef ASYNC_WEBSERVER_ON
-    yield();
-#else
-    delay(100);
-#endif
-    if (FREQUENTMEASUREMENT == true) {
-      hpma115S0.Init();
-#ifdef ASYNC_WEBSERVER_ON
-      yield();
-#else
-      delay(100);
-#endif
-      hpma115S0.EnableAutoSend();
-#ifdef ASYNC_WEBSERVER_ON
-      yield();
-#else
-      delay(100);
-#endif
-      hpma115S0.StartParticleMeasurement();
-    } else {
-      hpma115S0.Init();
-#ifdef ASYNC_WEBSERVER_ON
-      yield();
-#else
-      delay(100);
-#endif
-      hpma115S0.StopParticleMeasurement();
-    }
-  }
-#ifdef ASYNC_WEBSERVER_ON
-  yield();
-#else
-  delay(10);
-#endif
-#elif defined DUSTSENSOR_SPS30
-  if (!strcmp(DUST_MODEL, "SPS30")) {
-#ifdef ARDUINO_ARCH_ESP8266
-    Serial.println(F("Trying to connect to SPS30..."));
-#elif defined ARDUINO_ARCH_ESP32
-    Serial.println(("Trying to connect to SPS30..."));
-#endif
-    // set driver debug level
-    sps30.EnableDebugging(SPS30_DEBUG);
-
-    // set pins to use for softserial and Serial1 on ESP32
-    if (DUST_TX != 0 && DUST_RX != 0) sps30.SetSerialPin(DUST_RX, DUST_TX);
-
-    // Begin communication channel;
-    if (sps30.begin(SP30_COMMS) == false) {
-      Errorloop("could not initialize communication channel.", 0);
-    }
-
-    // check for SPS30 connection
-    if (sps30.probe() == false) {
-      Errorloop("could not probe / connect with SPS30.", 0);
-    } else {
-#ifdef ARDUINO_ARCH_ESP8266
-      Serial.println(F("Detected SPS30."));
-#elif defined ARDUINO_ARCH_ESP32
-      Serial.println(("Detected SPS30."));
-#endif
-    }
-    // reset SPS30 connection
-    if (sps30.reset() == false) {
-      Errorloop("could not reset.", 0);
-    }
-
-    // read device info
-    GetDeviceInfo();
-
-    // do Auto Clean interval
-    // SetAutoClean();
-
-    // start measurement
-    if (sps30.start() == true) {
-#ifdef ARDUINO_ARCH_ESP8266
-      Serial.println(F("Measurement started"));
-#elif defined ARDUINO_ARCH_ESP32
-      Serial.println(("Measurement started"));
-#endif
-    } else {
-      Errorloop("Could NOT start measurement", 0);
-    }
-    // clean now requested
-    if (SPS30_PERFORMCLEANNOW) {
-      // clean now
-      if (sps30.clean() == true) {
-#ifdef ARDUINO_ARCH_ESP8266
-        if (sps30.clean() == true) {
-          Serial.println(F("fan-cleaning manually started\n"));
-        } else {
-          Serial.println(F("Could NOT manually start fan-cleaning\n"));
-        }
-#elif defined ARDUINO_ARCH_ESP32
-        if (sps30.clean() == true) {
-          Serial.println(("fan-cleaning manually started\n"));
-        } else {
-          Serial.println(("Could NOT manually start fan-cleaning\n"));
-        }
-#endif
-      }
-    }
-
-    if (SP30_COMMS == I2C_COMMS) {
-      if (sps30.I2C_expect() == 4) {
-#ifdef ARDUINO_ARCH_ESP8266
-        Serial.println(F(" !!! Due to I2C buffersize only the SPS30 MASS concentration is available !!! \n"));
-#elif defined ARDUINO_ARCH_ESP32
-        Serial.println((" !!! Due to I2C buffersize only the SPS30 MASS concentration is available !!! \n"));
-#endif
-      }
-    }
-  }
-#else // If no dust sensor has been defined - use DUSTSENSOR_PMS5003_7003_BME280_0x76
-  if (!strcmp(DUST_MODEL, "PMS7003")) {
-#ifdef ARDUINO_ARCH_ESP8266
-#ifdef ARDUINO_ESP8266_RELEASE_2_6_0
-    PMS_Serial.begin(9600, DUST_TX, DUST_RX); // Change TX - D1 and RX - D2 pins -- only for esp8266 core 2.6.0
-#else
-    PMS_Serial.begin(9600); //PMSx003 serial -- esp8266 core 2.6.1 or later
-#endif
-#elif defined ARDUINO_ARCH_ESP32
-    PMS_Serial.begin(9600, SERIAL_8N1, DUST_TX, DUST_RX); //PMSx003 serial
-#endif
-    if (FREQUENTMEASUREMENT == true) {
-      pms.wakeUp();
-#ifdef ASYNC_WEBSERVER_ON
-      yield();
-      delay(500);
-#else
-      delay(500);
-#endif
-      pms.activeMode();
-    } else {
-      pms.passiveMode();
-#ifdef ASYNC_WEBSERVER_ON
-      yield();
-#else
-      delay(500);
-#endif
-      pms.sleep();
-    }
-  }
+  dustSensor.setup(FREQUENTMEASUREMENT);
 #endif
 
   yield();
@@ -1094,14 +910,14 @@ void setup() {
 #endif
   } else {
     if (LUFTDATEN_ON) {
-      SENDING_FREQUENCY_interval = SENDING_FREQUENCY_interval * SENDING_FREQUENCY;
-      if (AIRMONITOR_ON) {
-        if (SENDING_FREQUENCY < 3) {
-          SENDING_FREQUENCY_AIRMONITOR_interval = SENDING_FREQUENCY_AIRMONITOR_interval * 3; // * 3 -- API restriction - <28 requests per hour
-        } else {
-          SENDING_FREQUENCY_AIRMONITOR_interval = SENDING_FREQUENCY_AIRMONITOR_interval * SENDING_FREQUENCY;
-        }
-      }
+      // SENDING_FREQUENCY_interval = SENDING_FREQUENCY_interval * SENDING_FREQUENCY;
+      // if (AIRMONITOR_ON) {
+      //   if (SENDING_FREQUENCY < 3) {
+      //     SENDING_FREQUENCY_AIRMONITOR_interval = SENDING_FREQUENCY_AIRMONITOR_interval * 3; // * 3 -- API restriction - <28 requests per hour
+      //   } else {
+      //     SENDING_FREQUENCY_AIRMONITOR_interval = SENDING_FREQUENCY_AIRMONITOR_interval * SENDING_FREQUENCY;
+      //   }
+      // }
     }
     if (THINGSPEAK_ON or INFLUXDB_ON or MQTT_ON) {
       SENDING_DB_FREQUENCY_interval = SENDING_DB_FREQUENCY_interval * SENDING_DB_FREQUENCY;
@@ -1130,7 +946,7 @@ void setup() {
     // #define BME280_ADD 0x76
     // bme.begin(BME280_ADD);
     // bme.begin();
-    thpSensor.setup();
+    thpSensor.setup(FIRST_THP_SDA, SECOND_THP_SCL);
 #endif
   }
   // } else if (!strcmp(THP_MODEL, "BMP280")) {
@@ -1297,26 +1113,13 @@ void sendDataToExternalServices() {
 void loop() {
 
   yield();
-
-  pm_calibration(thpSensor.getTemperature(), thpSensor.getHumidity());
+  dustSensor.calibrate(thpSensor.getTemperature(), thpSensor.getHumidity());
 
   // DUST SENSOR refresh data - START
-#if defined(DUSTSENSOR_PMS5003_7003_BME280_0x76) || defined(DUSTSENSOR_PMS5003_7003_BME280_0x77)
   if (!strcmp(DUST_MODEL, "PMS7003")) {
-    pms.read(data);
+    dustSensor.read();
   }
-#elif defined DUSTSENSOR_SDS011_21
-#ifdef ARDUINO_ARCH_ESP8266
-  PmResult SDSdata = sds.queryPm();
-#endif
-#elif defined DUSTSENSOR_HPMA115S0
-#elif defined DUSTSENSOR_SPS30
-  //read_sps30_data();
-#else // If no dust sensor has been defined - use DUSTSENSOR_PMS5003_7003_BME280_0x76
-  if (!strcmp(DUST_MODEL, "PMS7003")) {
-    pms.read(data);
-  }
-#endif
+
   // DUST SENSOR refresh data - END
 
 #ifndef ASYNC_WEBSERVER_ON
@@ -1325,19 +1128,19 @@ void loop() {
 
 
   if (strcmp(DUST_MODEL, "Non")) {
-    unsigned int current_DUST_Millis = millis();
+    // unsigned int current_DUST_Millis = millis();
     if (FREQUENTMEASUREMENT == true ) {
-      if (current_DUST_Millis - previous_DUST_Millis >= DUST_interval) {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("\nFREQUENT MEASUREMENT Mode!"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("\nFREQUENT MEASUREMENT Mode!"));
-#endif
-        }
-        takeNormalnPMMeasurements();
-        previous_DUST_Millis = millis();
-      }
+//       if (current_DUST_Millis - previous_DUST_Millis >= DUST_interval) {
+//         if (DEBUG) {
+// #ifdef ARDUINO_ARCH_ESP8266
+//           Serial.println(F("\nFREQUENT MEASUREMENT Mode!"));
+// #elif defined ARDUINO_ARCH_ESP32
+//           Serial.println(("\nFREQUENT MEASUREMENT Mode!"));
+// #endif
+//         }
+//         dustSensor.takeNormalnPMMeasurements();
+//         previous_DUST_Millis = millis();
+//       }
     }
     if (DEEPSLEEP_ON == true) {
       if (DEBUG) {
@@ -1347,7 +1150,7 @@ void loop() {
         Serial.println(("\nDeepSleep Mode!"));
 #endif
       }
-      takeSleepPMMeasurements();
+      dustSensor.takeSleepPMMeasurements();
       yield();
 
       if (LUFTDATEN_ON) {
@@ -1373,17 +1176,17 @@ void loop() {
 #endif
 
     } else {
-      if (current_DUST_Millis - previous_DUST_Millis >= DUST_interval) {
-        if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-          Serial.println(F("\nNormal Mode!"));
-#elif defined ARDUINO_ARCH_ESP32
-          Serial.println(("\nNormal Mode!"));
-#endif
-        }
-        takeSleepPMMeasurements();
-        previous_DUST_Millis = millis();
-      }
+//       if (current_DUST_Millis - previous_DUST_Millis >= DUST_interval) {
+//         if (DEBUG) {
+// #ifdef ARDUINO_ARCH_ESP8266
+//           Serial.println(F("\nNormal Mode!"));
+// #elif defined ARDUINO_ARCH_ESP32
+//           Serial.println(("\nNormal Mode!"));
+// #endif
+//         }
+//         dustSensor.takeSleepPMMeasurements();
+//         previous_DUST_Millis = millis();
+//       }
     }
   } else {
     if (DEEPSLEEP_ON == true) {
@@ -1392,14 +1195,14 @@ void loop() {
 #elif defined ARDUINO_ARCH_ESP32
       Serial.println(("\nDeepSleep Mode!\n"));
 #endif
-      unsigned int current_2sec_Millis = millis();
-      previous_2sec_Millis = millis();
-      while (previous_2sec_Millis - current_2sec_Millis <= TwoSec_interval * 10) {
-#ifndef ASYNC_WEBSERVER_ON
-        WebServer.handleClient();
-#endif
-        previous_2sec_Millis = millis();
-      }
+      // unsigned int current_2sec_Millis = millis();
+//       dustSensor->previous_2sec_Millis = millis();
+//       while (dustSensor->previous_2sec_Millis - current_2sec_Millis <= dustSensor->TwoSec_interval * 10) {
+// #ifndef ASYNC_WEBSERVER_ON
+//         WebServer.handleClient();
+// #endif
+//         dustSensor->previous_2sec_Millis = millis();
+//       }
       if (LUFTDATEN_ON) {
         updateTHPMeasurements();
         sendDataToExternalServices();
@@ -1425,32 +1228,32 @@ void loop() {
   }
 
   if (LUFTDATEN_ON) {
-    unsigned int current_SENDING_FREQUENCY_Millis = millis();
-    if (current_SENDING_FREQUENCY_Millis - previous_SENDING_FREQUENCY_Millis >= SENDING_FREQUENCY_interval) {
-        updateTHPMeasurements();
-      sendDataToExternalServices();
-      previous_SENDING_FREQUENCY_Millis = millis();
-    }
+    // unsigned int current_SENDING_FREQUENCY_Millis = millis();
+    // if (current_SENDING_FREQUENCY_Millis - previous_SENDING_FREQUENCY_Millis >= SENDING_FREQUENCY_interval) {
+    //     updateTHPMeasurements();
+    //   sendDataToExternalServices();
+    //   previous_SENDING_FREQUENCY_Millis = millis();
+    // }
   }
 
-  unsigned int current_REBOOT_Millis = millis();
-  if (current_REBOOT_Millis - previous_REBOOT_Millis >= REBOOT_interval) {
-#ifdef ARDUINO_ARCH_ESP8266
-    Serial.println(F("autoreboot..."));
-#elif defined ARDUINO_ARCH_ESP32
-    Serial.println(("autoreboot..."));
-#endif
-    delay(1000);
-    previous_REBOOT_Millis = millis();
+//   unsigned int current_REBOOT_Millis = millis();
+//   if (current_REBOOT_Millis - previous_REBOOT_Millis >= REBOOT_interval) {
+// #ifdef ARDUINO_ARCH_ESP8266
+//     Serial.println(F("autoreboot..."));
+// #elif defined ARDUINO_ARCH_ESP32
+//     Serial.println(("autoreboot..."));
+// #endif
+//     delay(1000);
+//     previous_REBOOT_Millis = millis();
 
-#ifdef ARDUINO_ARCH_ESP8266
-    ESP.reset();
-#elif defined ARDUINO_ARCH_ESP32
-    ESP.restart();
-#endif
+// #ifdef ARDUINO_ARCH_ESP8266
+//     ESP.reset();
+// #elif defined ARDUINO_ARCH_ESP32
+//     ESP.restart();
+// #endif
 
-    delay(5000);
-  }
+//     delay(5000);
+//   }
 
 } // loop() - END
 
@@ -1493,45 +1296,6 @@ void storage_changed(char * szstorage, int size) {
   fsDAT.close();
 }
 
-// HomeKit -- START
-// void notify_hap() {
-//   if (homekit_temperature) {
-//     homekit_characteristic_t * ch_temp = homekit_service_characteristic_by_type(homekit_temperature, HOMEKIT_CHARACTERISTIC_CURRENT_TEMPERATURE);
-//     if (ch_temp && !isnan(homekit_DeviceData.homekit_temperature) &&  ch_temp->value.float_value != homekit_DeviceData.homekit_temperature ) {
-//       ch_temp->value.float_value = homekit_DeviceData.homekit_temperature;
-//       homekit_characteristic_notify(ch_temp, ch_temp->value);
-//     }
-//   }
-
-//   if (homekit_humidity) {
-//     homekit_characteristic_t * ch_hum = homekit_service_characteristic_by_type(homekit_humidity, HOMEKIT_CHARACTERISTIC_CURRENT_RELATIVE_HUMIDITY);
-//     if (ch_hum && !isnan(homekit_DeviceData.homekit_humidity) && ch_hum->value.float_value != homekit_DeviceData.homekit_humidity) {
-//       ch_hum->value.float_value = homekit_DeviceData.homekit_humidity;
-//       homekit_characteristic_notify(ch_hum, ch_hum->value);
-//     }
-//   }
-
-//   if (homekit_pm10_level) {
-//     HAP_NOTIFY_CHANGES(float, pm10_level_characteristic, homekit_DeviceData.homekit_pm10_level, 0.0)
-//     homekit_characteristic_t* hc_homekit_pm10_level = homekit_service_characteristic_by_type(homekit_pm10_level, HOMEKIT_CHARACTERISTIC_PM10_DENSITY);
-//     if ( hc_homekit_pm10_level) {
-//       uint8_t air_quality_pm10 = pm10_air_quality_level(homekit_DeviceData.homekit_pm10_level, (uint8_t)(* hc_homekit_pm10_level->min_value) + 1, (uint8_t)(* hc_homekit_pm10_level->max_value));
-//       // Serial.println(F("Noify level:") + String(air_quality_pm10));
-//       HAP_NOTIFY_CHANGES(int, hc_homekit_pm10_level, air_quality_pm10, 0)
-//     }
-//   }
-
-//   if (homekit_pm25_level) {
-//     HAP_NOTIFY_CHANGES(float, pm25_level_characteristic, homekit_DeviceData.homekit_pm25_level, 0.0)
-//     homekit_characteristic_t* hc_homekit_pm25_level = homekit_service_characteristic_by_type(homekit_pm25_level, HOMEKIT_CHARACTERISTIC_PM25_DENSITY);
-//     if ( hc_homekit_pm25_level) {
-//       uint8_t air_quality_pm25 = pm25_air_quality_level(homekit_DeviceData.homekit_pm25_level, (uint8_t)(* hc_homekit_pm25_level->min_value) + 1, (uint8_t)(* hc_homekit_pm25_level->max_value));
-//       // Serial.println(F("Noify level:") + String(air_quality_pm25));
-//       HAP_NOTIFY_CHANGES(int, hc_homekit_pm25_level, air_quality_pm25, 0)
-//     }
-//   }
-// }
-
 #define PM25_RANGE_EXCELLENT_LEVEL 20.0
 #define PM25_RANGE_POOR_LEVEL 100.0
 uint8_t pm25_air_quality_level(float input_value, uint8_t min, uint8_t max) {
@@ -1554,3 +1318,25 @@ uint8_t pm10_air_quality_level(float input_value, uint8_t min, uint8_t max) {
 // #endif
 // HomeKit -- END
 
+
+// #include <Arduino.h>
+
+// // #include <TemperatureHumidityPressure.hpp>
+// // TemperatureHumidityPressureSensor thpSensor;
+
+// #include <wifi.hpp>
+
+// WIFI wifi;
+
+// void setup() {
+//     Serial.begin(115200);
+    
+
+// }
+
+// void loop() {
+//     // put your main code here, to run repeatedly:
+
+
+
+// }
