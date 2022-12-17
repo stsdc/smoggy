@@ -50,9 +50,8 @@ class DustSensor {
         } averageDustSample;
         unsigned int previous_2sec_Millis;
         unsigned short TwoSec_interval;
-
-
         DustSensor();
+
     private:
         PMS::DATA data;
         HardwareSerial hw_serial; // Change TX - D5 and RX - D4 pins
