@@ -38,7 +38,7 @@ bool DEEP_SLEEP_EN = true;
 unsigned char DUST_TIME            = 1;
 unsigned char NUMBEROFMEASUREMENTS = 10;
 
-unsigned int MEASURMENT_INTERVAL = 60000; // 20s
+unsigned int MEASURMENT_INTERVAL = 120e3; // in ms
 
 #define uS_TO_S_FACTOR 1000000ULL         /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP_uS MEASURMENT_INTERVAL / 1000 * uS_TO_S_FACTOR
@@ -92,12 +92,13 @@ void loop() {
   smoggyPortal.portal.handleClient();
 
   if (DEEP_SLEEP_EN) {
+    battery.get_percentage();
     measure_and_send();
-    battery.print();
     Serial.println("💤 Going to sleep now...");
     Serial.flush();
 
     esp_deep_sleep_start();
   }
+  battery.get_percentage();
 
 }

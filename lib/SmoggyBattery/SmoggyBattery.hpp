@@ -5,7 +5,7 @@
 #define R1 33
 #define R2 100
 #define VOLTAGE_OUT(Vin) (((Vin) * R2) / (R1 + R2))
-#define VOLTAGE_BAT_MAX 4.2
+#define VOLTAGE_BAT_MAX 4.0
 #define VOLTAGE_BAT_MIN 3.3
 #define ADC_REFERENCE 3.3
 #define VOLTAGE_TO_ADC(in) ((ADC_REFERENCE * (in)) / 4096)
