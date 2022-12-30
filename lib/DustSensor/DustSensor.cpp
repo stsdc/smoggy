@@ -5,20 +5,20 @@
 DustSensor::DustSensor() : hw_serial(1), pms(hw_serial){
 }
 
-void DustSensor::setup(bool FREQUENTMEASUREMENT) {
-    unsigned int previous_2sec_Millis = 0;
-    unsigned short TwoSec_interval = 2 * 1000; // 2 second
+void DustSensor::setup(unsigned short number_of_measurments) {
+  this->number_of_measurments = number_of_measurments;
+  this->measurements = new DustSample[number_of_measurments];
 
-    hw_serial.begin(9600, SERIAL_8N1, DUST_TX, DUST_RX); //PMSx003 serial
-    if (FREQUENTMEASUREMENT == true) {
-        this->pms.wakeUp();
-        delay(500);
-        this->pms.activeMode();
-    } else {
+    hw_serial.begin(9600, SERIAL_8N1, 16, 17); //PMSx003 serial
+    // if (FREQUENTMEASUREMENT == true) {
+    //     this->pms.wakeUp();
+    //     delay(500);
+    //     this->pms.activeMode();
+    // } else {
       pms.passiveMode();
       delay(500);
       this->pms.sleep();
-    }
+    // }
 }
 
 void DustSensor::calibrate(float temperature, float humidity) {
@@ -30,18 +30,26 @@ void DustSensor::calibrate(float temperature, float humidity) {
 
 void DustSensor::read() {
     this->pms.read(this->data);
+    // Serial.print("PM 1.0 (ug/m3): ");
+    // Serial.println(this->data.PM_AE_UG_1_0);
+
+    // Serial.print("PM 2.5 (ug/m3): ");
+    // Serial.println(this->data.PM_AE_UG_2_5);
+
+    // Serial.print("PM 10.0 (ug/m3): ");
+    // Serial.println(this->data.PM_AE_UG_10_0);
 }
 
-void DustSensor::get_average(int NUMBEROFMEASUREMENTS) {
+DustSensor::DustSample DustSensor::get_average() {
     averageDustSample.PM1 = 0;
     averageDustSample.PM2_5 = 0;
     averageDustSample.PM4 = 0;
     averageDustSample.PM10 = 0;
 
     for (int i = 0; i < NUMBEROFMEASUREMENTS; i++) {
-        averageDustSample.PM1 += this->measurements[i][0];
-        averageDustSample.PM2_5 += this->measurements[i][1];
-        averageDustSample.PM10 += this->measurements[i][2];
+        averageDustSample.PM1 += this->measurements[i].PM1;
+        averageDustSample.PM2_5 += this->measurements[i].PM2_5;
+        averageDustSample.PM10 += this->measurements[i].PM10;
     }
     averageDustSample.PM1 = averageDustSample.PM1 / NUMBEROFMEASUREMENTS;
     averageDustSample.PM2_5 = averageDustSample.PM2_5 / NUMBEROFMEASUREMENTS;
@@ -49,15 +57,16 @@ void DustSensor::get_average(int NUMBEROFMEASUREMENTS) {
 
     if (DEBUG) {
         Serial.print(("\n"));
-        Serial.print(("========================================"));
-        Serial.print(("\n\nAverage PM1: "));
-        Serial.print(averagePM1);
-        Serial.print(("\nAverage PM2.5: "));
-        Serial.print(averagePM25);
+        Serial.println(("=========AVERAGE========="));
+        Serial.println(("Average PM1: " + String(this->averageDustSample.PM1)));
+        Serial.println(("Average PM2.5: " + String(this->averageDustSample.PM2_5)));
+        Serial.print(("\n"));
+
     }
+    return averageDustSample;
 }
 
-void DustSensor::takeNormalnPMMeasurements() {
+void DustSensor::processMeasurement(int counter) {
   /*
     #ifdef DUSTSENSOR_SPS30
     unsigned short pmMeasurements[9][3];
@@ -65,103 +74,46 @@ void DustSensor::takeNormalnPMMeasurements() {
     unsigned short pmMeasurements[9][2];
     #endif
   */
-  // unsigned char iPM = 0;
+  DustSample dustSample;
+  dustSample.PM1 = this->calibration_magic_value * data.PM_AE_UG_1_0;
+  dustSample.PM2_5 = this->calibration_magic_value * data.PM_AE_UG_2_5;
+  dustSample.PM10 = this->calibration_magic_value * data.PM_AE_UG_10_0;
 
-  this->measurements[iPM][0] = (this->calibration_magic_value * data.PM_AE_UG_1_0);
-  this->measurements[iPM][1] = (this->calibration_magic_value * data.PM_AE_UG_2_5);
-  this->measurements[iPM][2] = (this->calibration_magic_value * data.PM_AE_UG_10_0);
-
+  this->measurements[counter] = dustSample;
 
   if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-    Serial.print(F("\n\nPM measurement number: "));
-    Serial.print(iPM);
-    Serial.print(F("\nValue of PM1: "));
-    Serial.print(pmMeasurements[iPM][0]);
-    Serial.print(F("\nValue of PM2.5: "));
-    Serial.print(pmMeasurements[iPM][1]);
-#ifdef DUSTSENSOR_SPS30
-    Serial.print(F("\nValue of PM4: "));
-    Serial.print(pmMeasurements[iPM][3]);
-#endif
-    Serial.print(F("\nValue of PM10: "));
-    Serial.println(pmMeasurements[iPM][2]);
-#elif defined ARDUINO_ARCH_ESP32
-    Serial.print(("\n\nPM measurement number: "));
-    Serial.print(iPM);
-    Serial.print(("\nValue of PM1: "));
-    Serial.print(this->measurements[iPM][0]);
-    Serial.print(("\nValue of PM2.5: "));
-    Serial.print(this->measurements[iPM][1]);
-#ifdef DUSTSENSOR_SPS30
-    Serial.print(("\nValue of PM4: "));
-    Serial.print(this->measurements[iPM][3]);
-#endif
-    Serial.print(("\nValue of PM10: "));
-    Serial.println(this->measurements[iPM][2]);
-#endif
+    Serial.println("#" + String(counter + 1) +
+      " measurement: PM1: " + String(this->measurements[counter].PM1) +
+      " PM2.5: " + String(this->measurements[counter].PM2_5) +
+      " PM10: " + String(this->measurements[counter].PM10)
+      );
 
-  }
-  if (++iPM == NUMBEROFMEASUREMENTS) {
-    this->get_average(NUMBEROFMEASUREMENTS);
-    iPM = 0;
   }
 
 }
 
 void DustSensor::takeSleepPMMeasurements() {
-//   if (DEBUG) {
-// #ifdef ARDUINO_ARCH_ESP8266
-//     Serial.print(F("\nTurning ON PM sensor..."));
-// #elif defined ARDUINO_ARCH_ESP32
-//     Serial.print(("\nTurning ON PM sensor..."));
-// #endif
-//   }
 
-//   if (!strcmp(DUST_MODEL, "PMS7003")) {
+  if (DEBUG) {
+    Serial.println(("Turning ON PM sensor..."));
+  }
+
     this->pms.wakeUp();
-// #ifndef ASYNC_WEBSERVER_ON
-//     unsigned int current_2sec_Millis = millis();
-//     previous_2sec_Millis = millis();
-//     while (previous_2sec_Millis - current_2sec_Millis <= TwoSec_interval * 5) {
-//       // WebServer.handleClient();
-//       previous_2sec_Millis = millis();
-//     }
-//     previous_2sec_Millis = 0;
-// #endif
     this->pms.requestRead();
-//   }
 
   int counterNM1 = 0;
-  while (counterNM1 < NUMBEROFMEASUREMENTS) {
-#ifdef ASYNC_WEBSERVER_ON
+  while (counterNM1 < this->number_of_measurments) {
     if (pms.readUntil(data)) {
-      takeNormalnPMMeasurements();
+      this->processMeasurement(counterNM1);
       counterNM1++;
     }
-#else
-    unsigned int current_2sec_Millis = millis();
-    if (current_2sec_Millis - this->previous_2sec_Millis >= TwoSec_interval) {
-
-      if (pms.readUntil(this->data)) {
-        this->takeNormalnPMMeasurements();
-        counterNM1++;
-      }
-
-       this->previous_2sec_Millis = millis();
-    }
-    // WebServer.handleClient();
-#endif
   }
   if (DEBUG) {
-#ifdef ARDUINO_ARCH_ESP8266
-    Serial.print(F("\nTurning OFF PM sensor...\n"));
-#elif defined ARDUINO_ARCH_ESP32
-    Serial.print(("\nTurning OFF PM sensor...\n"));
-#endif
+    Serial.println(("Turning OFF PM sensor...\n"));
   }
 
-  if (!strcmp(DUST_MODEL, "PMS7003")) {
     this->pms.sleep();
-  }
+
 }
+
+

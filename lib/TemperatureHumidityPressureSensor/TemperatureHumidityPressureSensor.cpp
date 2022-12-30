@@ -6,8 +6,8 @@ TemperatureHumidityPressureSensor::TemperatureHumidityPressureSensor(unsigned ch
 }
 
 
-void TemperatureHumidityPressureSensor::setup(unsigned char PIN_SDA, unsigned char PIN_SCL) {
-    Adafruit_BME280 bme((uint8_t)PIN_SDA, (uint8_t)PIN_SCL);
+void TemperatureHumidityPressureSensor::setup() {
+    // Adafruit_BME280 bme((uint8_t)PIN_SDA, (uint8_t)PIN_SCL);
 
     if (!bme.begin()) {
       Serial.println("\nCould not find a valid BME280 sensor, check wiring!\n");
@@ -15,6 +15,7 @@ void TemperatureHumidityPressureSensor::setup(unsigned char PIN_SDA, unsigned ch
 }
 
 float TemperatureHumidityPressureSensor::getTemperature() {
+  Serial.println("🌡️ Temp: " + String(bme.readTemperature()) + "℃");
     return bme.readTemperature();
 }
 
