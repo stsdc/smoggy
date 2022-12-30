@@ -57,7 +57,7 @@ extern unsigned char DUST_RX9; // D2
    15 - D8
 */
 
-extern unsigned char DUST_TIME;
+// extern unsigned char DUST_TIME;
 extern unsigned char NUMBEROFMEASUREMENTS;
 
 extern bool LUFTDATEN_ON;

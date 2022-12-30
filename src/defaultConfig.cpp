@@ -6,9 +6,9 @@ bool DISPLAY_PM1 = false;
 char LANGUAGE[12] = "english"; // english or polish
 unsigned char SELECTED_LANGUAGE = 1; // en - 1; pl - 2
 
-char THP_MODEL[12] = "Non";
-char DUST_MODEL[12] = "Non";
-bool FREQUENTMEASUREMENT = false;
+char THP_MODEL[12] = "BME280";
+char DUST_MODEL[12] = "PMS7003";
+bool FREQUENTMEASUREMENT = true;
 
 bool SECOND_THP = false;
 char SECOND_THP_MODEL[12] = "Non";
@@ -55,10 +55,10 @@ unsigned char DUST_RX = 19; // D2
    15 - D8
 */
 
-unsigned char DUST_TIME = 1;
-unsigned char NUMBEROFMEASUREMENTS = 10;
+// unsigned char DUST_TIME = 1;
+// unsigned char NUMBEROFMEASUREMENTS = 10;
 
-bool LUFTDATEN_ON = false;
+bool LUFTDATEN_ON = true;
 bool LUFTDATEN_GRAPH_ON = false;
 int LUFTDATEN_APIID = 0;
 bool SMOGLIST_ON = true;
@@ -66,8 +66,8 @@ bool SMOGLIST_ON = true;
 bool AIRMONITOR_ON = false;
 bool AIRMONITOR_GRAPH_ON = false;
 char AIRMONITOR_API_KEY[48] = "";
-char LATITUDE[16] = "50.263911";
-char LONGITUDE[16] = "18.995711";
+char LATITUDE[16] = "51.14347850000";
+char LONGITUDE[16] = "17.05005970000";
 char EMAIL[64] = "email@mail.pl";
 short MYALTITUDE = 271;
 
@@ -111,11 +111,11 @@ bool AQI_ECO_ON = false;
 char AQI_ECO_HOST[64] = "???.aqi.eco";
 char AQI_ECO_PATH[64] = "/u/???";
 
-unsigned char SENDING_FREQUENCY = 3;
-unsigned char SENDING_DB_FREQUENCY = 3;
+// unsigned char SENDING_FREQUENCY = 3;
+// unsigned char SENDING_DB_FREQUENCY = 3;
 bool DEEPSLEEP_ON = false;
 
-bool DEBUG = false;
+bool DEBUG = true;
 #ifdef ARDUINO_ARCH_ESP8266
 bool AUTOUPDATE_ON = true;
 #elif defined ARDUINO_ARCH_ESP32

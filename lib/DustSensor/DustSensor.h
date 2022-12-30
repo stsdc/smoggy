@@ -28,26 +28,24 @@
 // #define DUSTSENSOR_SPS30 // Sensirion SPS30
 
 #include "PMS.h" // https://github.com/fu-hsi/PMS // 5.11.2021
-
-
-static unsigned short averagePM1, averagePM25, averagePM4, averagePM10 = 0;
-static unsigned char iPM = 0;
-
+//   unsigned char iPM = 0;
 
 class DustSensor {
     public:
         void calibrate(float, float);
-        void get_average(int);
-        void setup(bool);
+        void setup(unsigned short number_of_measurments);
         void read();
-        void takeNormalnPMMeasurements();
+        void processMeasurement(int);
         void takeSleepPMMeasurements();
-        struct AverageDustSample{
+        struct DustSample{
             unsigned short PM1;
             unsigned short PM2_5;
             unsigned short PM4; // DUSTSENSOR_SPS30
             unsigned short PM10;
         } averageDustSample;
+
+        DustSample get_average();
+
         unsigned int previous_2sec_Millis;
         unsigned short TwoSec_interval;
         DustSensor();
@@ -56,8 +54,10 @@ class DustSensor {
         PMS::DATA data;
         HardwareSerial hw_serial; // Change TX - D5 and RX - D4 pins
         PMS pms;
-        unsigned short measurements[10][3];
+        DustSample *measurements;
         float calibration_magic_value;
+        unsigned short number_of_measurments;
+        unsigned char iPM;
 
 };
 #endif

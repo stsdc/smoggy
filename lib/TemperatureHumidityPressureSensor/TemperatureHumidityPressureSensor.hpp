@@ -2,7 +2,7 @@
 // #define TEMP_HUMI_PRES_H
 
 
-#include <Adafruit_BME280.h> // https://github.com/Takatsuki0204/BME280-I2C-ESP32 // 5.11.2021
+#include <Adafruit_BME280.h>
 
 // #include "../../src/defaultConfig.h"
 
@@ -87,7 +87,7 @@ class TemperatureHumidityPressureSensor {
         float getHumidity();
         float getPressure();
         bool getStatus();
-        void setup(unsigned char ,unsigned char );
+        void setup();
         TemperatureHumidityPressureSensor(unsigned char PIN_SDA, unsigned char PIN_SCL);
 };
 
