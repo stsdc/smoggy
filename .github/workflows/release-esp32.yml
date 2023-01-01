@@ -1,5 +1,5 @@
 # Source: https://github.com/gskjold/villavent-bridge/blob/master/.github/workflows/release.yml
-name: Release
+name: Release ESP32
 
 on:
   push:
