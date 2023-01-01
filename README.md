@@ -16,4 +16,7 @@ _Firmware for ESP32 to measure weather condition and air quality_
  * Prepare to add Firebase support
    - Dummy data sending works; needs a method to accept real data
 
+## Installing
+Look at this instructions: https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/flashing-firmware.html
+
 _Inspired by [Smogomierz](https://github.com/hackerspace-silesia/Smogomierz)_
