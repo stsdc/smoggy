@@ -50,7 +50,7 @@ jobs:
         pip install -U platformio
 
     - name: PlatformIO lib install
-      run: pio lib install
+      run: pio pkg install
 
     - name: PlatformIO run
       run: pio run
@@ -72,7 +72,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: .pio/build/esp32/firmware.bin
+        asset_path: .pio/build/esp32dev/firmware.bin
         asset_name: smoggy-esp32-${{ steps.release_tag.outputs.tag }}.bin
         asset_content_type: application/octet-stream
 
@@ -82,6 +82,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: .pio/build/esp32/partitions.bin
+        asset_path: .pio/build/esp32dev/partitions.bin
         asset_name: smoggy-esp32-partitions-${{ steps.release_tag.outputs.tag }}.bin
         asset_content_type: application/octet-stream
