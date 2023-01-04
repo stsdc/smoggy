@@ -1,4 +1,10 @@
+
+#if defined(ESP8266)
+#include <ESP8266mDNS.h>
+#elif defined(ESP32)
 #include <ESPmDNS.h>
+#endif
+
 #include <AutoConnect.h>
 #include <smogly_spiffs.hpp>
 

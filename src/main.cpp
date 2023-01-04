@@ -1,29 +1,25 @@
-#include <WiFi.h>      // Replace with WiFi.h for ESP32
-#include <WebServer.h> // Replace with WebServer.h for ESP32
 #include <Webpage.hpp>
-
-
-
 #include <TemperatureHumidityPressureSensor.hpp>
 #include <DustSensor.h>
 
 #include <Luftdaten.hpp>
 #include <Aqieco.hpp>
 #include <SmoggyFirebase.hpp>
-
+#include <SmoggyDeepSleep.hpp>
 #include <smogly_spiffs.hpp>
 #include <SmoggyBattery.hpp>
 #include <LittleFS.h>
 
 TemperatureHumidityPressureSensor thpSensor = TemperatureHumidityPressureSensor(21, 22);
-DustSensor dustSensor = DustSensor();
-Battery battery;
+DustSensor dustSensor                       = DustSensor();
+Battery    battery;
 
-SmoggyFirebase smoggyFirebase;
-SmoggyPortal smoggyPortal;
+SmoggyFirebase  smoggyFirebase;
+SmoggyPortal    smoggyPortal;
+SmoggyDeepSleep smoggyDeepSleep;
 
 Luftdaten luftdaten;
-Aqieco aqieco;
+Aqieco    aqieco;
 
 String get_mac_as_id() {
   String macAddress = WiFi.macAddress();
@@ -33,38 +29,37 @@ String get_mac_as_id() {
   return macAddress;
 }
 
-bool DEEP_SLEEP_EN = true;
+// RAM:   [=         ]  14.7% (used 48012 bytes from 327680 bytes)
+// Flash: [======    ]  64.7% (used 1271345 bytes from 1966080 bytes)
+
+
+String smoggy_get_id() {
+#if defined(ESP8266)
+  return String(ESP.getChipId());
+#elif defined(ESP32)
+  return String((uint32_t)(ESP.getEfuseMac()));
+#endif
+}
 
 unsigned char DUST_TIME            = 1;
 unsigned char NUMBEROFMEASUREMENTS = 10;
 
 unsigned int MEASURMENT_INTERVAL = 120e3; // in ms
 
-#define uS_TO_S_FACTOR 1000000ULL         /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP_uS MEASURMENT_INTERVAL / 1000 * uS_TO_S_FACTOR
 
 void setup() {
   Serial.begin(115200);
+
   delay(1000);
 
   fs_setup();
-  // DeepSleep is enabled by default.
-  // Pressing BOOT button will wakeup the device and disable sleep.
-  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP_uS);
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0);
 
-  esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-  if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT0) {
-    DEEP_SLEEP_EN = false;
-    Serial.println("💤 DeepSleep disabled.");
-  } else {
-      Serial.println("💤 DeepSleep for " + String(MEASURMENT_INTERVAL / 1000) + " seconds enabled.");
-  }
+  smoggyDeepSleep.setup(MEASURMENT_INTERVAL);
 
   thpSensor.setup();
   dustSensor.setup(10);
 
-  Serial.println("X-Sensor: smogomierz-" + String((uint32_t)(ESP.getEfuseMac())));
+  Serial.println("X-Sensor: smogomierz-" + smoggy_get_id());
   smoggyPortal.setup();
 
 
@@ -84,21 +79,18 @@ void measure_and_send() {
   unsigned short DEFAULT_PM = 0;
   luftdaten.send(dust.PM1, dust.PM2_5, dust.PM10, temperature, pressure, humidity);
   aqieco.send(dust.PM1, dust.PM2_5, dust.PM10, temperature, pressure, humidity, battery);
-
 }
 
 void loop() {
-
   smoggyPortal.portal.handleClient();
 
-  if (DEEP_SLEEP_EN) {
+  if (smoggyDeepSleep.DEEP_SLEEP_EN) {
     battery.get_percentage();
     measure_and_send();
     Serial.println("💤 Going to sleep now...");
     Serial.flush();
 
-    esp_deep_sleep_start();
+    smoggyDeepSleep.start();
   }
   battery.get_percentage();
-
 }
