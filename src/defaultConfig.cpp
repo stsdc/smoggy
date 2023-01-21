@@ -1,96 +1,17 @@
 #include "defaultConfig.h"
 
-bool DEVICENAME_AUTO = true;
-char DEVICENAME[32] = "Smogly1"; // Bez polskich znakow!! // Without Polish letters!!
-bool DISPLAY_PM1 = false;
-char LANGUAGE[12] = "english"; // english or polish
-unsigned char SELECTED_LANGUAGE = 1; // en - 1; pl - 2
 
-char THP_MODEL[12] = "BME280";
-char DUST_MODEL[12] = "PMS7003";
-bool FREQUENTMEASUREMENT = true;
+char DEVICENAME[32]  = "Smoggy";
 
-bool SECOND_THP = false;
-char SECOND_THP_MODEL[12] = "Non";
-
-
-
-
-/*
-   ESP8266
-   13 - D7
-   15 - D8
-*/
-
-// unsigned char DUST_TIME = 1;
-// unsigned char NUMBEROFMEASUREMENTS = 10;
-
-bool LUFTDATEN_ON = true;
-bool LUFTDATEN_GRAPH_ON = false;
-int LUFTDATEN_APIID = 0;
-bool SMOGLIST_ON = true;
-
-bool AIRMONITOR_ON = false;
-bool AIRMONITOR_GRAPH_ON = false;
-char AIRMONITOR_API_KEY[48] = "";
-char LATITUDE[16] = "51.14347850000";
-char LONGITUDE[16] = "17.05005970000";
-char EMAIL[64] = "email@mail.pl";
-short MYALTITUDE = 271;
-
-bool THINGSPEAK_ON = false;
-bool THINGSPEAK_GRAPH_ON = false;
-char THINGSPEAK_API_KEY[32] = "WRITE_API_KEY";
-unsigned short THINGSPEAK_CHANNEL_ID = 0;
-char THINGSPEAK_READ_API_KEY[32] = "READ_API_KEY";
-
-bool INFLUXDB_ON = false;
-char INFLUXDB_VERSION[4] = "1"; // 1 (for 1.x version) or 2 for 2.0 or later
-char INFLUXDB_HOST[128] = "INFLUXDB_ADRESS";
-uint16_t INFLUXDB_PORT = 8086;
-char INFLUXDB_DATABASE[32] = "mydb";
-char INFLUXDB_USER[32] = "username";
-char INFLUXDB_PASSWORD[64] = "password";
-char INFLUXDB_ORG[32] = "myOrg";
-char INFLUXDB_BUCKET[32] = "myBucket";
-char INFLUXDB_TOKEN[128] = "myToken";
-
-bool MQTT_ON = false;
-char MQTT_HOST[128] = "MQTT_ADRESS";
-uint16_t MQTT_PORT = 1883;
-char MQTT_USER[32] = "username";
-char MQTT_PASSWORD[64] = "password";
-
-bool MQTT_IP_IN_TOPIC = false;
-bool MQTT_DEVICENAME_IN_TOPIC = true;
-bool MQTT_SLASH_AT_THE_BEGINNING = true;
-bool MQTT_SLASH_AT_THE_END = true;
-
-char MQTT_TOPIC_TEMP[64] = "sensor/temperature";
-char MQTT_TOPIC_HUMI[64] = "sensor/humidity";
-char MQTT_TOPIC_PRESS[64] = "sensor/pressure";
-char MQTT_TOPIC_PM1[64] = "sensor/PM1";
-char MQTT_TOPIC_PM25[64] = "sensor/PM2.5";
-char MQTT_TOPIC_PM10[64] = "sensor/PM10";
-char MQTT_TOPIC_AIRQUALITY[32] = "airquality";
-
-bool AQI_ECO_ON = false;
-char AQI_ECO_HOST[64] = "???.aqi.eco";
 char AQI_ECO_PATH[64] = "/u/???";
+bool DEBUG            = true;
 
-// unsigned char SENDING_FREQUENCY = 3;
-// unsigned char SENDING_DB_FREQUENCY = 3;
-bool DEEPSLEEP_ON = false;
+unsigned int DUST_NUMBEROFMEASUREMENTS = 10;
 
-bool DEBUG = true;
+// Number of samples to get to measure average battery voltage
+int BAT_NUMBEROFMEASUREMENTS = 50;
 
+// Delay between getting each sample of battery voltage
+int BAT_DELAY = 20;                       // ms
 
-bool CONFIG_AUTH = false;
-char CONFIG_USERNAME[64] = "admin";
-char CONFIG_PASSWORD[128] = "password";
-
-char MODEL[12] = "white";
-float calib1 = 1.0;
-float calib2 = 1.0;
-
-bool HOMEKIT_SUPPORT = false;
+unsigned int MEASURMENT_INTERVAL = 180e3; // in ms

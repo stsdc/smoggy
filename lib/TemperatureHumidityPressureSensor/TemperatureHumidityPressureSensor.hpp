@@ -88,7 +88,7 @@ class TemperatureHumidityPressureSensor {
         float getPressure();
         bool getStatus();
         void setup();
-        TemperatureHumidityPressureSensor(unsigned char PIN_SDA, unsigned char PIN_SCL);
+        TemperatureHumidityPressureSensor(unsigned char, unsigned char);
 };
 
 // #endif

@@ -18,7 +18,7 @@ String Aqieco::buildJSON(
   JsonObject json = jsonBuffer.to<JsonObject>();
 
   json["esp8266id"]        = String((uint32_t)(ESP.getEfuseMac()));
-  json["software_version"] = "Smoggy 1.0.0-beta";
+  json["software_version"] = "Smoggy " + String(SW_VERSION);
 
   JsonArray  sensordatavalues = json.createNestedArray("sensordatavalues");
   JsonObject P0               = sensordatavalues.createNestedObject();
@@ -46,7 +46,7 @@ String Aqieco::buildJSON(
 
   JsonObject jsonBatteryVoltage = sensordatavalues.createNestedObject();
   jsonBatteryVoltage["value_type"] = "battery_voltage";
-  jsonBatteryVoltage["value"]      = String(battery.get_vbat()); // V
+  jsonBatteryVoltage["value"]      = String(battery.vbat); // V
   
   JsonObject jsonBatteryPercentage = sensordatavalues.createNestedObject();
   jsonBatteryPercentage["value_type"] = "battery_percentage";

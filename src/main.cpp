@@ -10,8 +10,16 @@
 #include <SmoggyBattery.hpp>
 #include <LittleFS.h>
 
-TemperatureHumidityPressureSensor thpSensor = TemperatureHumidityPressureSensor(21, 22);
-DustSensor dustSensor                       = DustSensor();
+// Pins for temperature, humidity, pressure sensor
+unsigned int PIN_SDA_THP = 21;
+unsigned int PIN_SCL_THP = 22;
+
+// Pins for dust sensor
+int PIN_RX_DUST = 16;
+int PIN_TX_DUST = 17;
+
+TemperatureHumidityPressureSensor thpSensor = TemperatureHumidityPressureSensor(PIN_SDA_THP, PIN_SCL_THP);
+DustSensor dustSensor                       = DustSensor(PIN_RX_DUST, PIN_TX_DUST);
 Battery    battery;
 
 SmoggyFirebase  smoggyFirebase;
@@ -36,15 +44,14 @@ String get_mac_as_id() {
 String smoggy_get_id() {
 #if defined(ESP8266)
   return String(ESP.getChipId());
+
 #elif defined(ESP32)
   return String((uint32_t)(ESP.getEfuseMac()));
-#endif
+
+#endif // if defined(ESP8266)
 }
 
-unsigned char DUST_TIME            = 1;
-unsigned char NUMBEROFMEASUREMENTS = 10;
 
-unsigned int MEASURMENT_INTERVAL = 120e3; // in ms
 
 
 void setup() {
@@ -57,7 +64,7 @@ void setup() {
   smoggyDeepSleep.setup(MEASURMENT_INTERVAL);
 
   thpSensor.setup();
-  dustSensor.setup(10);
+  dustSensor.setup(DUST_NUMBEROFMEASUREMENTS);
 
   Serial.println("X-Sensor: smogomierz-" + smoggy_get_id());
   smoggyPortal.setup();
@@ -85,12 +92,20 @@ void loop() {
   smoggyPortal.portal.handleClient();
 
   if (smoggyDeepSleep.DEEP_SLEEP_EN) {
-    battery.get_percentage();
-    measure_and_send();
+    battery.sample(BAT_NUMBEROFMEASUREMENTS, BAT_DELAY);
+    battery.print();
+
+    // preventing to run power expensive measurements if battery close to discharge
+    // also battery might be not connected, neglecting empty measurements
+    if ((battery.vbat >= 3.31) || (battery.vin == 0.0)) {
+      measure_and_send();
+    } else {
+      Serial.println("⚠️ Battery low. No measuring for now...");
+    }
+
     Serial.println("💤 Going to sleep now...");
     Serial.flush();
 
     smoggyDeepSleep.start();
   }
-  battery.get_percentage();
 }

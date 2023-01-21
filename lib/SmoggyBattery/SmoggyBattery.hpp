@@ -15,8 +15,9 @@
 class Battery {
     public:
         Battery();
-        float get_vbat();
-        float get_vin();
+        float vin;
+        float vbat;
+        void sample(int, int);
         float get_percentage();
         void print();
 

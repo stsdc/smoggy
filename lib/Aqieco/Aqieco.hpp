@@ -1,4 +1,5 @@
 #include <ArduinoJson.h>
+#include "../../src/defaultConfig.h"
 
 #include <SmoggyBattery.hpp>
 

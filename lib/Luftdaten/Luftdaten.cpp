@@ -60,7 +60,7 @@ bool Luftdaten::sendRequest(
 String Luftdaten::buildDustJSON(unsigned short & averagePM1, unsigned short & averagePM25, unsigned short & averagePM10) {
     StaticJsonDocument<600> jsonBuffer;
     JsonObject json = jsonBuffer.to<JsonObject>();
-    json["software_version"] = "Smoggy 1.0.0-beta";
+    json["software_version"] = "Smoggy " + String(SW_VERSION);
     JsonArray sensordatavalues = json.createNestedArray("sensordatavalues");
       JsonObject P0 = sensordatavalues.createNestedObject();
       P0["value_type"] = "P0";
@@ -80,7 +80,7 @@ String Luftdaten::buildDustJSON(unsigned short & averagePM1, unsigned short & av
 String Luftdaten::buildMadaviDustJSON(unsigned short & averagePM1, unsigned short & averagePM25, unsigned short & averagePM10) {
     StaticJsonDocument<600> jsonBuffer;
     JsonObject json = jsonBuffer.to<JsonObject>();
-    json["software_version"] = "Smoggy 1.0.0-beta";
+    json["software_version"] = "Smoggy " + String(SW_VERSION);
     JsonArray sensordatavalues = json.createNestedArray("sensordatavalues");
       JsonObject P0 = sensordatavalues.createNestedObject();
       P0["value_type"] = "PMS_P0";
@@ -100,7 +100,7 @@ String Luftdaten::buildMadaviDustJSON(unsigned short & averagePM1, unsigned shor
 String Luftdaten::buildTHPJSON(float & temperature, float & humidity, float & pressure) {
     StaticJsonDocument<600> jsonBuffer;
     JsonObject json = jsonBuffer.to<JsonObject>();
-    json["software_version"] = "Smoggy 1.0.0-beta";
+    json["software_version"] = "Smoggy " + String(SW_VERSION);
     JsonArray sensordatavalues = json.createNestedArray("sensordatavalues");
       JsonObject jsonTemperature = sensordatavalues.createNestedObject();
       jsonTemperature["value_type"] = "temperature";

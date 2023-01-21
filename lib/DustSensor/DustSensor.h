@@ -4,23 +4,6 @@
 #include <Arduino.h>
 #include "../../src/defaultConfig.h"
 
-// #include "../include/defaultConfig.hpp"
-
-// #ifdef ASYNC_WEBSERVER_ON
-// #include <AsyncTCP.h>
-// #include <ESPAsyncWebServer.h>
-// #else
-// #include <WebServer.h>
-// #endif
-
-// #ifdef ASYNC_WEBSERVER_ON
-// #include "../lib/smogly_asyncwebserver.hpp"
-// #else
-// // #include "../lib/smogly_webserver.hpp"
-// #endif
-
-
-
 #define DUSTSENSOR_PMS5003_7003_BME280_0x76 // PMS5003 / PMS7003 - BME280_0x76
 // #define DUSTSENSOR_PMS5003_7003_BME280_0x77 // PMS5003 / PM§S7003 - BME280_0x77
 // #define DUSTSENSOR_SDS011_21 // Nova Fitness SDS011 / SDS021
@@ -48,7 +31,7 @@ class DustSensor {
 
         unsigned int previous_2sec_Millis;
         unsigned short TwoSec_interval;
-        DustSensor();
+        DustSensor(int, int);
 
     private:
         PMS::DATA data;
@@ -58,6 +41,8 @@ class DustSensor {
         float calibration_magic_value;
         unsigned short number_of_measurments;
         unsigned char iPM;
+        int pin_rx;
+        int pin_tx;
 
 };
 #endif

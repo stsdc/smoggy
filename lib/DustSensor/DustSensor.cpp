@@ -2,14 +2,16 @@
 
 // static float calib = 1;
 
-DustSensor::DustSensor() : hw_serial(1), pms(hw_serial){
+DustSensor::DustSensor(int PIN_RX, int PIN_TX) : hw_serial(1), pms(hw_serial){
+  this->pin_rx = PIN_RX;
+  this->pin_tx = PIN_TX;
 }
 
 void DustSensor::setup(unsigned short number_of_measurments) {
   this->number_of_measurments = number_of_measurments;
   this->measurements = new DustSample[number_of_measurments];
 
-    hw_serial.begin(9600, SERIAL_8N1, 16, 17); //PMSx003 serial
+    hw_serial.begin(9600, SERIAL_8N1, this->pin_rx, this->pin_tx); //PMSx003 serial
     // if (FREQUENTMEASUREMENT == true) {
     //     this->pms.wakeUp();
     //     delay(500);
@@ -46,14 +48,14 @@ DustSensor::DustSample DustSensor::get_average() {
     averageDustSample.PM4 = 0;
     averageDustSample.PM10 = 0;
 
-    for (int i = 0; i < NUMBEROFMEASUREMENTS; i++) {
+    for (int i = 0; i < this->number_of_measurments; i++) {
         averageDustSample.PM1 += this->measurements[i].PM1;
         averageDustSample.PM2_5 += this->measurements[i].PM2_5;
         averageDustSample.PM10 += this->measurements[i].PM10;
     }
-    averageDustSample.PM1 = averageDustSample.PM1 / NUMBEROFMEASUREMENTS;
-    averageDustSample.PM2_5 = averageDustSample.PM2_5 / NUMBEROFMEASUREMENTS;
-    averageDustSample.PM10 = averageDustSample.PM10 / NUMBEROFMEASUREMENTS;
+    averageDustSample.PM1 = averageDustSample.PM1 / this->number_of_measurments;
+    averageDustSample.PM2_5 = averageDustSample.PM2_5 / this->number_of_measurments;
+    averageDustSample.PM10 = averageDustSample.PM10 / this->number_of_measurments;
 
     if (DEBUG) {
         Serial.print(("\n"));
