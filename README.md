@@ -7,7 +7,7 @@ _Firmware for ESP32 to measure weather condition and air quality_
 * Support PMS7003
 * Battery voltage measurement
 * Sending to Sensors.Community (Luftdaten) (every 2min)
-* Sending to aqi.eco (every 2min)
+* Sending to aqi.eco (every 3min)
 * DeepSleep by default
 * Press *boot* button to wake up and disable DeepSleep until next reset
 * Settings page:
