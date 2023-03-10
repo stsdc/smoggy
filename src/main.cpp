@@ -97,7 +97,7 @@ void loop() {
 
     // preventing to run power expensive measurements if battery close to discharge
     // also battery might be not connected, neglecting empty measurements
-    if ((battery.vbat >= 3.31) || (battery.vin == 0.0)) {
+    if ((battery.vbat >= 3.31) || (battery.get_percentage() < 0)) {
       measure_and_send();
     } else {
       Serial.println("⚠️ Battery low. No measuring for now...");
