@@ -7,6 +7,8 @@ _Firmware for ESP32 to measure weather condition and air quality_
 * Support PMS7003
 * Battery voltage measurement
 * No measurement if low battery
+* *Reset* if BME280 responds with Nan
+* *Reset* after 10 deepSleep wake ups
 * Sending to Sensors.Community (Luftdaten) (every 2min)
 * Sending to aqi.eco (every 3min)
 * DeepSleep by default

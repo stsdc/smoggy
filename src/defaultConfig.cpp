@@ -14,4 +14,4 @@ int BAT_NUMBEROFMEASUREMENTS = 50;
 // Delay between getting each sample of battery voltage
 int BAT_DELAY = 20;                       // ms
 
-unsigned int MEASURMENT_INTERVAL = 180e3; // in ms
+unsigned int MEASURMENT_INTERVAL = 120e3; // in ms

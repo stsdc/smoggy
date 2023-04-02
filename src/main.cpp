@@ -10,6 +10,9 @@
 #include <SmoggyBattery.hpp>
 #include <LittleFS.h>
 
+RTC_DATA_ATTR int boot_counter = 0;
+
+
 // Pins for temperature, humidity, pressure sensor
 unsigned int PIN_SDA_THP = 21;
 unsigned int PIN_SCL_THP = 22;
@@ -51,11 +54,17 @@ String smoggy_get_id() {
 #endif // if defined(ESP8266)
 }
 
-
-
-
 void setup() {
   Serial.begin(115200);
+
+  ++boot_counter;
+  Serial.println("⬆️ Boot #" + String(boot_counter));
+
+  if (boot_counter > 10) {
+    Serial.println("♻️ Restart...");
+    ESP.restart();
+  }
+
 
   delay(1000);
 
@@ -75,13 +84,20 @@ void setup() {
 }
 
 void measure_and_send() {
-  dustSensor.calibrate(thpSensor.getTemperature(), thpSensor.getHumidity());
+  auto temperature = thpSensor.getTemperature();
+  auto humidity    = thpSensor.getHumidity();
+
+  if (isnan(temperature)) {
+    Serial.println("⚠️ Temperature sensor returns NaN.");
+    Serial.println("♻️ Restart...");
+    ESP.restart();
+  }
+
+  dustSensor.calibrate(temperature, humidity);
 
   dustSensor.takeSleepPMMeasurements();
 
   auto dust                 = dustSensor.get_average();
-  auto temperature          = thpSensor.getTemperature();
-  auto humidity             = thpSensor.getHumidity();
   auto pressure             = thpSensor.getPressure();
   unsigned short DEFAULT_PM = 0;
   luftdaten.send(dust.PM1, dust.PM2_5, dust.PM10, temperature, pressure, humidity);
@@ -95,7 +111,8 @@ void loop() {
     battery.sample(BAT_NUMBEROFMEASUREMENTS, BAT_DELAY);
     battery.print();
 
-    // preventing to run power expensive measurements if battery close to discharge
+    // preventing to run power expensive measurements if battery close to
+    // discharge;
     // also battery might be not connected, neglecting empty measurements
     if ((battery.vbat >= 3.31) || (battery.get_percentage() < 0)) {
       measure_and_send();
