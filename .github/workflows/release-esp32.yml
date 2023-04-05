@@ -4,7 +4,7 @@ name: Release ESP32
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - '*.*.*'
 
 
 jobs:
