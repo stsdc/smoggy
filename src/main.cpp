@@ -57,8 +57,10 @@ String smoggy_get_id() {
 void setup() {
   Serial.begin(115200);
 
+  Serial.println("❤️  Smoggy v" + String(SW_VERSION));
+
   ++boot_counter;
-  Serial.println("⬆️ Boot #" + String(boot_counter));
+  Serial.println("⬆️  Boot #" + String(boot_counter));
 
   if (boot_counter > 10) {
     Serial.println("♻️ Restart...");
@@ -84,24 +86,26 @@ void setup() {
 }
 
 void measure_and_send() {
-  auto temperature = thpSensor.getTemperature();
-  auto humidity    = thpSensor.getHumidity();
+  if (thpSensor.getStatus()) {
+    auto temperature = thpSensor.getTemperature();
+    auto humidity    = thpSensor.getHumidity();
 
-  if (isnan(temperature)) {
-    Serial.println("⚠️ Temperature sensor returns NaN.");
-    Serial.println("♻️ Restart...");
-    ESP.restart();
+    if (isnan(temperature)) {
+      Serial.println("⚠️ Temperature sensor returns NaN.");
+      Serial.println("♻️ Restart...");
+      ESP.restart();
+    }
+
+    dustSensor.calibrate(temperature, humidity);
+
+    dustSensor.takeSleepPMMeasurements();
+
+    auto dust                 = dustSensor.get_average();
+    auto pressure             = thpSensor.getPressure();
+    unsigned short DEFAULT_PM = 0;
+    luftdaten.send(dust.PM1, dust.PM2_5, dust.PM10, temperature, pressure, humidity);
+    aqieco.send(dust.PM1, dust.PM2_5, dust.PM10, temperature, pressure, humidity, battery);
   }
-
-  dustSensor.calibrate(temperature, humidity);
-
-  dustSensor.takeSleepPMMeasurements();
-
-  auto dust                 = dustSensor.get_average();
-  auto pressure             = thpSensor.getPressure();
-  unsigned short DEFAULT_PM = 0;
-  luftdaten.send(dust.PM1, dust.PM2_5, dust.PM10, temperature, pressure, humidity);
-  aqieco.send(dust.PM1, dust.PM2_5, dust.PM10, temperature, pressure, humidity, battery);
 }
 
 void loop() {

@@ -2,7 +2,9 @@
 #define DEFAULT_CONF_H
 #include <Arduino.h>
 
-#define SW_VERSION "1.0.2"
+#define SW_VERSION "1.0.3"
+
+#define SMOGGY_I2C_THP_ADDR 0x76
 
 extern bool DEBUG;
 extern char DEVICENAME[32];

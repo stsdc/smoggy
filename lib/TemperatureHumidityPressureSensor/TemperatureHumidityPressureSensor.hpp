@@ -4,7 +4,7 @@
 
 #include <Adafruit_BME280.h>
 
-// #include "../../src/defaultConfig.h"
+#include "../../src/defaultConfig.h"
 
 // #ifdef ARDUINO_ARCH_ESP8266
 // #ifndef DUSTSENSOR_PMS5003_7003_BME280_0x77
