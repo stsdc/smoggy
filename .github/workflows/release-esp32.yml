@@ -4,7 +4,7 @@ name: Release ESP32
 on:
   push:
     tags:
-      - '*.*.*'
+      - '*'
 
 
 jobs:
@@ -73,7 +73,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: .pio/build/esp32dev/firmware.bin
-        asset_name: smoggy-esp32-${{ steps.release_tag.outputs.tag }}.bin
+        asset_name: smoggy-esp32-${{ github.ref }}.bin
         asset_content_type: application/octet-stream
 
     - name: Upload esp32 partitions to release
@@ -83,5 +83,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: .pio/build/esp32dev/partitions.bin
-        asset_name: smoggy-esp32-partitions-${{ steps.release_tag.outputs.tag }}.bin
+        asset_name: smoggy-esp32-partitions-${{ github.ref }}.bin
         asset_content_type: application/octet-stream
