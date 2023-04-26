@@ -1,7 +1,6 @@
 #include <Webpage.hpp>
 #include <TemperatureHumidityPressureSensor.hpp>
 #include <DustSensor.h>
-
 #include <Luftdaten.hpp>
 #include <Aqieco.hpp>
 #include <SmoggyFirebase.hpp>
@@ -55,6 +54,10 @@ String smoggy_get_id() {
 }
 
 void setup() {
+  // Stolen from @alicjamusial/meteo-station-code
+  setCpuFrequencyMhz(80); // low, 'cause we want long lifetime :)
+  delay(1000); // just another one ugly hack
+
   Serial.begin(115200);
 
   Serial.println("❤️  Smoggy v" + String(SW_VERSION));
@@ -66,7 +69,6 @@ void setup() {
     Serial.println("♻️ Restart...");
     ESP.restart();
   }
-
 
   delay(1000);
 
@@ -112,13 +114,13 @@ void loop() {
   smoggyPortal.portal.handleClient();
 
   if (smoggyDeepSleep.DEEP_SLEEP_EN) {
-    battery.sample(BAT_NUMBEROFMEASUREMENTS, BAT_DELAY);
+    battery.sampling_on(BAT_NUMBEROFMEASUREMENTS, BAT_DELAY);
     battery.print();
 
     // preventing to run power expensive measurements if battery close to
     // discharge;
     // also battery might be not connected, neglecting empty measurements
-    if ((battery.vbat >= 3.31) || (battery.get_percentage() < 0)) {
+    if ((battery.vbat >= 3.31) || (battery.get_percentage() < 0)) { // ← this rule is pretty dumb
       measure_and_send();
     } else {
       Serial.println("⚠️ Battery low. No measuring for now...");
@@ -126,7 +128,7 @@ void loop() {
 
     Serial.println("💤 Going to sleep now...");
     Serial.flush();
-
+    battery.sampling_off();
     smoggyDeepSleep.start();
   }
 }

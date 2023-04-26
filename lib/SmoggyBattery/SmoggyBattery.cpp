@@ -2,7 +2,7 @@
 
 Battery::Battery() {}
 
-void Battery::sample(int num_of_samples, int delay_between_samples) {
+void Battery::sampling_on(int num_of_samples, int delay_between_samples) {
   int adc_sum = 0;
 
   for (int i = 0; i < num_of_samples; i++) {
@@ -10,8 +10,12 @@ void Battery::sample(int num_of_samples, int delay_between_samples) {
     delay(delay_between_samples);
   }
 
-  this->vin = ((adc_sum / num_of_samples) * ADC_REFERENCE) / (4095);
+  this->vin  = ((adc_sum / num_of_samples) * ADC_REFERENCE) / (4095);
   this->vbat = ((R1 + R2) * this->vin) / R2;
+}
+
+void Battery::sampling_off() {
+  adc_power_off();
 }
 
 float Battery::get_percentage() {

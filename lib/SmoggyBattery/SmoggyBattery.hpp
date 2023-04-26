@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "esp_adc_cal.h"
 
 #define R1 33
 #define R2 100
@@ -17,7 +18,8 @@ class Battery {
         Battery();
         float vin;
         float vbat;
-        void sample(int, int);
+        void sampling_on(int, int);
+        void sampling_off();
         float get_percentage();
         void print();
 

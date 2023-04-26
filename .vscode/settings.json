@@ -12,7 +12,8 @@
         "regex": "cpp",
         "*.tcc": "cpp",
         "forward_list": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "algorithm": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
