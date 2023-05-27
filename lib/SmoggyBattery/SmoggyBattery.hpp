@@ -3,8 +3,8 @@
 #include <Arduino.h>
 #include "esp_adc_cal.h"
 
-#define R1 33
-#define R2 100
+#define R1 10
+#define R2 10
 #define VOLTAGE_OUT(Vin) (((Vin) * R2) / (R1 + R2))
 #define VOLTAGE_BAT_MAX 4.0
 #define VOLTAGE_BAT_MIN 3.3

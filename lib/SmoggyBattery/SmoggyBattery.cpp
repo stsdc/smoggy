@@ -1,6 +1,11 @@
 #include "SmoggyBattery.hpp"
 
-Battery::Battery() {}
+Battery::Battery() {
+  esp_adc_cal_characteristics_t VoltageCharacteristics;
+  adc1_config_width(ADC_WIDTH_BIT_12);
+  adc1_config_channel_atten((adc1_channel_t)ADC_CHANNEL_6, ADC_ATTEN_DB_11);
+  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &VoltageCharacteristics);
+}
 
 void Battery::sampling_on(int num_of_samples, int delay_between_samples) {
   int adc_sum = 0;
