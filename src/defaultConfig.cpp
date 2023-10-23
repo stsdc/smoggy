@@ -15,3 +15,4 @@ int BAT_NUMBEROFMEASUREMENTS = 50;
 int BAT_DELAY = 20;
 
 unsigned int MEASURMENT_INTERVAL = 120e3; // in ms
+unsigned int MEASURMENT_INTERVAL_LOW_BATTERY = 300e3; // in ms

@@ -106,7 +106,7 @@ bool DustSensor::getMeasurements() {
   int counterNM1 = 0;
   while (counterNM1 < this->number_of_measurments) {
     Serial.println(("Trying to read PM data..."));
-    if (pms.readUntil(data)) {
+    if (pms.readUntil(data, 5000)) {
       this->processMeasurement(counterNM1);
       counterNM1++;
     } else {

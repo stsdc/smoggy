@@ -13,5 +13,5 @@ extern unsigned int DUST_NUMBEROFMEASUREMENTS;
 extern int BAT_NUMBEROFMEASUREMENTS;
 extern int BAT_DELAY;
 extern unsigned int MEASURMENT_INTERVAL;
-
+extern unsigned int MEASURMENT_INTERVAL_LOW_BATTERY;
 #endif
