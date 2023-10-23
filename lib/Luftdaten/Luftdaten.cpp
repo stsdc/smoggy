@@ -7,9 +7,9 @@ Luftdaten::Luftdaten() : httpClient(){
 
 
 bool Luftdaten::send(
-    unsigned short & averagePM1,
-    unsigned short & averagePM25,
-    unsigned short & averagePM10,
+    signed short & averagePM1,
+    signed short & averagePM25,
+    signed short & averagePM10,
     float & temperature,
     float & pressure,
     float & humidity) {
@@ -57,27 +57,27 @@ bool Luftdaten::sendRequest(
     return true;
 }
 
-String Luftdaten::buildDustJSON(unsigned short & averagePM1, unsigned short & averagePM25, unsigned short & averagePM10) {
+String Luftdaten::buildDustJSON(signed short & averagePM1, signed short & averagePM25, signed short & averagePM10) {
     StaticJsonDocument<600> jsonBuffer;
     JsonObject json = jsonBuffer.to<JsonObject>();
     json["software_version"] = "Smoggy " + String(SW_VERSION);
     JsonArray sensordatavalues = json.createNestedArray("sensordatavalues");
       JsonObject P0 = sensordatavalues.createNestedObject();
       P0["value_type"] = "P0";
-      P0["value"] = averagePM1;
+      (averagePM1 == -1) ? P0["value"] = "" : P0["value"] = averagePM1;
       JsonObject P1 = sensordatavalues.createNestedObject();
       P1["value_type"] = "P1";
-      P1["value"] = averagePM10;
+      (averagePM10 == -1) ? P1["value"] = "" : P1["value"] = averagePM10;
       JsonObject P2 = sensordatavalues.createNestedObject();
       P2["value_type"] = "P2";
-      P2["value"] = averagePM25;
+      (averagePM25 == -1) ? P2["value"] = "" : P2["value"] = averagePM25;
 
         String requestBody;
         serializeJson(json, requestBody);
         return requestBody;
 }
 
-String Luftdaten::buildMadaviDustJSON(unsigned short & averagePM1, unsigned short & averagePM25, unsigned short & averagePM10) {
+String Luftdaten::buildMadaviDustJSON(signed short & averagePM1, signed short & averagePM25, signed short & averagePM10) {
     StaticJsonDocument<600> jsonBuffer;
     JsonObject json = jsonBuffer.to<JsonObject>();
     json["software_version"] = "Smoggy " + String(SW_VERSION);

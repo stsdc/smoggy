@@ -21,9 +21,9 @@ class Aqieco {
         Aqieco();
         void setup();
         bool send(
-    unsigned short & averagePM1,
-    unsigned short & averagePM25,
-    unsigned short & averagePM10,
+    signed short & averagePM1,
+    signed short & averagePM25,
+    signed short & averagePM10,
     float & temperature,
     float & pressure,
     float & humidity,
@@ -31,7 +31,7 @@ class Aqieco {
     
     private:
         HTTPClient httpClient;
-        String buildJSON(unsigned short & averagePM1, unsigned short & averagePM25, unsigned short & averagePM10, float & temperature, float & humidity, float & pressure, Battery & battery);
+        String buildJSON(signed short & averagePM1, signed short & averagePM25, signed short & averagePM10, float & temperature, float & humidity, float & pressure, Battery & battery);
         bool sendRequest(
             String json,
             const int pin,

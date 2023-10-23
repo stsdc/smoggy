@@ -6,9 +6,9 @@ Aqieco::Aqieco() : httpClient() {
 }
 
 String Aqieco::buildJSON(
-  unsigned short& averagePM1,
-  unsigned short& averagePM25,
-  unsigned short& averagePM10,
+  signed short& averagePM1,
+  signed short& averagePM25,
+  signed short& averagePM10,
   float         & temperature,
   float         & pressure,
   float         & humidity,
@@ -23,13 +23,16 @@ String Aqieco::buildJSON(
   JsonArray  sensordatavalues = json.createNestedArray("sensordatavalues");
   JsonObject P0               = sensordatavalues.createNestedObject();
   P0["value_type"] = "PMS_P0";
-  P0["value"]      = averagePM1;
+  (averagePM1 == -1) ? P0["value"] = "" : P0["value"] = averagePM1;
+
   JsonObject P1 = sensordatavalues.createNestedObject();
   P1["value_type"] = "PMS_P1";
-  P1["value"]      = averagePM10;
+  (averagePM10 == -1) ? P1["value"] = "" : P1["value"] = averagePM10;
+
   JsonObject P2 = sensordatavalues.createNestedObject();
   P2["value_type"] = "PMS_P2";
-  P2["value"]      = averagePM25;
+  (averagePM25 == -1) ? P2["value"] = "" : P2["value"] = averagePM25;
+
 
   JsonObject jsonTemperature = sensordatavalues.createNestedObject();
   jsonTemperature["value_type"] = "BME280_temperature";
@@ -84,9 +87,9 @@ bool Aqieco::sendRequest(
 }
 
 bool Aqieco::send(
-    unsigned short & averagePM1,
-    unsigned short & averagePM25,
-    unsigned short & averagePM10,
+    signed short & averagePM1,
+    signed short & averagePM25,
+    signed short & averagePM10,
     float & temperature,
     float & pressure,
     float & humidity,

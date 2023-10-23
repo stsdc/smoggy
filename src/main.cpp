@@ -100,9 +100,7 @@ void measure_and_send() {
 
     dustSensor.calibrate(temperature, humidity);
 
-    dustSensor.takeSleepPMMeasurements();
-
-    auto dust                 = dustSensor.get_average();
+    auto dust                 = dustSensor.getDust();
     auto pressure             = thpSensor.getPressure();
     unsigned short DEFAULT_PM = 0;
     luftdaten.send(dust.PM1, dust.PM2_5, dust.PM10, temperature, pressure, humidity);
@@ -120,7 +118,7 @@ void loop() {
     // preventing to run power expensive measurements if battery close to
     // discharge;
     // also battery might be not connected, neglecting empty measurements
-    if ((battery.vbat >= 3.31) || (battery.get_percentage() < 0)) { // ← this rule is pretty dumb
+    if ((battery.vbat >= 3.31) || (battery.get_percentage() < 0)) {
       measure_and_send();
     } else {
       Serial.println("⚠️ Battery low. No measuring for now...");

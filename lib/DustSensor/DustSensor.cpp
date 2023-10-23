@@ -7,7 +7,7 @@ DustSensor::DustSensor(int PIN_RX, int PIN_TX) : hw_serial(1), pms(hw_serial){
   this->pin_tx = PIN_TX;
 }
 
-void DustSensor::setup(unsigned short number_of_measurments) {
+void DustSensor::setup(unsigned short number_of_measurments = 10) {
   this->number_of_measurments = number_of_measurments;
   this->measurements = new DustSample[number_of_measurments];
 
@@ -42,7 +42,7 @@ void DustSensor::read() {
     // Serial.println(this->data.PM_AE_UG_10_0);
 }
 
-DustSensor::DustSample DustSensor::get_average() {
+DustSensor::DustSample DustSensor::getAverage() {
     averageDustSample.PM1 = 0;
     averageDustSample.PM2_5 = 0;
     averageDustSample.PM4 = 0;
@@ -94,7 +94,7 @@ void DustSensor::processMeasurement(int counter) {
 
 }
 
-void DustSensor::takeSleepPMMeasurements() {
+bool DustSensor::getMeasurements() {
 
   if (DEBUG) {
     Serial.println(("Turning ON PM sensor..."));
@@ -105,9 +105,13 @@ void DustSensor::takeSleepPMMeasurements() {
 
   int counterNM1 = 0;
   while (counterNM1 < this->number_of_measurments) {
+    Serial.println(("Trying to read PM data..."));
     if (pms.readUntil(data)) {
       this->processMeasurement(counterNM1);
       counterNM1++;
+    } else {
+      Serial.println(("No response from PM sensor..."));
+      return false;
     }
   }
   if (DEBUG) {
@@ -115,7 +119,16 @@ void DustSensor::takeSleepPMMeasurements() {
   }
 
     this->pms.sleep();
-
+  return true;
 }
 
-
+DustSensor::DustSample DustSensor::getDust() {
+  if (this->getMeasurements()) {
+    return this->getAverage();
+  }
+  DustSample dustSample;
+  dustSample.PM1 = -1;
+  dustSample.PM2_5 = -1;
+  dustSample.PM10 = -1;
+  return dustSample;
+}

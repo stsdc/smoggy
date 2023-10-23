@@ -19,15 +19,14 @@ class DustSensor {
         void setup(unsigned short number_of_measurments);
         void read();
         void processMeasurement(int);
-        void takeSleepPMMeasurements();
         struct DustSample{
-            unsigned short PM1;
-            unsigned short PM2_5;
-            unsigned short PM4; // DUSTSENSOR_SPS30
-            unsigned short PM10;
+            signed short PM1;
+            signed short PM2_5;
+            signed short PM4; // DUSTSENSOR_SPS30
+            signed short PM10;
         } averageDustSample;
 
-        DustSample get_average();
+        DustSample getDust();
 
         unsigned int previous_2sec_Millis;
         unsigned short TwoSec_interval;
@@ -43,6 +42,9 @@ class DustSensor {
         unsigned char iPM;
         int pin_rx;
         int pin_tx;
+        DustSample getAverage();
+        bool getMeasurements();
+
 
 };
 #endif
