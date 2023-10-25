@@ -118,12 +118,16 @@ void loop() {
     // preventing to run power expensive measurements if battery close to
     // discharge;
     // also battery might be not connected, neglecting empty measurements
-    if ((battery.vbat >= 3.31) || (battery.get_percentage() < 0)) {
-      measure_and_send();
-    } else if (battery.vbat <= 3.50) {
+
+    if (battery.vbat <= 3.50) {
       smoggyDeepSleep.setup(MEASURMENT_INTERVAL_LOW_BATTERY);
+      Serial.println("⚠️ Battery low. Measurment interval increased...");
+    }
+
+    if ((battery.vbat >= 3.31)) {
+      measure_and_send();
     } else {
-      Serial.println("⚠️ Battery low. No measuring for now...");
+      Serial.println("⚠️ Battery very low. No measuring for now...");
     }
 
     Serial.println("💤 Going to sleep now...");
