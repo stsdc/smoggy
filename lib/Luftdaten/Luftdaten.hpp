@@ -20,17 +20,18 @@
 class Luftdaten {
     public:
         Luftdaten();
-        void setup();
+        void setup(String smoggy_id);
         bool send(
-    signed short & averagePM1,
-    signed short & averagePM25,
-    signed short & averagePM10,
-    float & temperature,
-    float & pressure,
-    float & humidity);
+        signed short & averagePM1,
+        signed short & averagePM25,
+        signed short & averagePM10,
+        float & temperature,
+        float & pressure,
+        float & humidity);
     
     private:
         HTTPClient httpClient;
+        String smoggy_id;
         String buildDustJSON(signed short & averagePM1, signed short & averagePM25, signed short & averagePM10);
         String buildMadaviDustJSON(signed short & averagePM1, signed short & averagePM25, signed short & averagePM10);
         String buildTHPJSON(float & temperature, float & humidity, float & pressure);

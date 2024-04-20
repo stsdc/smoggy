@@ -5,6 +5,10 @@ Luftdaten::Luftdaten() : httpClient(){
     httpClient.setReuse(false);
 };
 
+void Luftdaten::setup(String smoggy_id) {
+    this->smoggy_id = smoggy_id;
+}
+
 
 bool Luftdaten::send(
     signed short & averagePM1,
@@ -42,8 +46,8 @@ bool Luftdaten::sendRequest(
     if (httpClient.begin(host, port, url)) {
         httpClient.addHeader("Content-Type", "application/json");
         httpClient.addHeader("X-PIN", String(pin));
-        httpClient.setUserAgent("smogomierz-" + String((uint32_t)(ESP.getEfuseMac())));
-        httpClient.addHeader("X-Sensor", "smogomierz-" + String((uint32_t)(ESP.getEfuseMac())));
+        httpClient.setUserAgent(this->smoggy_id);
+        httpClient.addHeader("X-Sensor", this->smoggy_id);
         auto result = httpClient.POST(json);
         if (result >= HTTP_CODE_OK && result <= HTTP_CODE_ALREADY_REPORTED) {
             Serial.println("Succeeded - " + String(result));

@@ -48,7 +48,7 @@ String smoggy_get_id() {
   return String(ESP.getChipId());
 
 #elif defined(ESP32)
-  return String((uint32_t)(ESP.getEfuseMac()));
+  return "smogomierz-" + String((uint32_t)(ESP.getEfuseMac()));
 
 #endif // if defined(ESP8266)
 }
@@ -79,7 +79,10 @@ void setup() {
   thpSensor.setup();
   dustSensor.setup(DUST_NUMBEROFMEASUREMENTS);
 
-  Serial.println("X-Sensor: smogomierz-" + smoggy_get_id());
+  luftdaten.setup(smoggy_get_id());
+  aqieco.setup(smoggy_get_id());
+
+  Serial.println("X-Sensor: " + smoggy_get_id());
   smoggyPortal.setup();
 
 
@@ -124,7 +127,7 @@ void loop() {
       Serial.println("⚠️ Battery low. Measurment interval increased...");
     }
 
-    if ((battery.vbat >= 3.31)) {
+    if ((battery.vbat >= 3.00)) {
       measure_and_send();
     } else {
       Serial.println("⚠️ Battery very low. No measuring for now...");
