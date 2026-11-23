@@ -1,0 +1,41 @@
+{
+  "name": "Smoggy ESP32 (PlatformIO)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "vscode",
+  "runArgs": [
+    // Required so the container can open /dev/ttyUSB* and /dev/ttyACM*.
+    "--privileged",
+    // Serial-device groups differ between distributions. Because the host
+    // /dev is bind-mounted, the numeric GIDs must match on both sides:
+    // dialout=20 (Debian/Ubuntu), dialout=18 (Fedora), uucp=14 (Arch).
+    "--group-add=dialout",
+    "--group-add=18",
+    "--group-add=14"
+  ],
+  "mounts": [
+    // Expose host serial devices, including adapters plugged in after the
+    // container has started.
+    "source=/dev,target=/dev,type=bind",
+    // Keep PlatformIO's toolchains and package cache across container rebuilds.
+    "source=smoggy-platformio,target=/home/vscode/.platformio,type=volume"
+  ],
+  // Make sure the mounted cache volume is writable (the container user's UID
+  // can be remapped to match the host), then download the ESP32
+  // platform/toolchain and libraries declared in platformio.ini.
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.platformio && pio pkg install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "platformio.platformio-ide"
+      ],
+      "settings": {
+        "platformio-ide.useBuiltinPIOCore": false,
+        "platformio-ide.useBuiltinPython": false,
+        "C_Cpp.errorSquiggles": "disabled",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}
